@@ -37,7 +37,9 @@ export function Navbar() {
     <header
       className={cn(
         "sticky top-0 z-50 w-full border-b transition-smooth",
-        scrolled ? "border-border bg-background/85 shadow-soft backdrop-blur-xl" : "border-transparent bg-background",
+        scrolled
+          ? "border-border bg-background/85 shadow-soft backdrop-blur-xl"
+          : "border-transparent bg-background",
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
@@ -72,13 +74,25 @@ export function Navbar() {
             <Search aria-hidden />
           </Button>
 
-          <Button asChild variant="ghost" size="icon" className="hidden sm:inline-flex" aria-label="Account">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="hidden sm:inline-flex"
+            aria-label="Account"
+          >
             <Link to={user ? "/account" : "/login"}>
               <User aria-hidden />
             </Link>
           </Button>
 
-          <Button asChild variant="ghost" size="icon" className="relative hidden sm:inline-flex" aria-label="Wishlist">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="relative hidden sm:inline-flex"
+            aria-label="Wishlist"
+          >
             <Link to="/account" hash="wishlist">
               <Heart aria-hidden />
               {wishlist.items.length > 0 && (
@@ -89,7 +103,13 @@ export function Navbar() {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative" aria-label={`Cart, ${count} items`} onClick={() => setDrawerOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            aria-label={`Cart, ${count} items`}
+            onClick={() => setDrawerOpen(true)}
+          >
             <ShoppingBag aria-hidden />
             {count > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
@@ -120,13 +140,25 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="my-2 h-px bg-border" />
-                <Link to={user ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-surface">
+                <Link
+                  to={user ? "/account" : "/login"}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-surface"
+                >
                   {user ? "My account" : "Sign in"}
                 </Link>
-                <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-surface">
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-surface"
+                >
                   Cart ({count})
                 </Link>
-                <Link to="/aws-learning" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium text-primary hover:bg-surface">
+                <Link
+                  to="/aws-learning"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-primary hover:bg-surface"
+                >
                   AWS Implementation Lab
                 </Link>
               </nav>

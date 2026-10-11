@@ -1,24 +1,20 @@
-export interface StorageService {
-  uploadFile(file: File, path: string): Promise<{ key: string; url: string }>;
-  deleteFile(key: string): Promise<void>;
-  getFileUrl(key: string): Promise<string>;
-}
+import { startImageUpload, finishImageUpload } from "@/server/admin.functions";
 
-/**
- * AWS LEARNING ZONE — Amazon S3 (+ CloudFront)
- * Replace with presigned-URL uploads:
- *   1. Lambda issues a presigned PUT for `s3://$VITE_S3_BUCKET/<path>`
- *   2. Browser PUTs the file directly to S3 (never through your API)
- *   3. Reads are served from CloudFront, not the bucket origin
- * Never ship AWS credentials to the browser.
- */
-export const mockStorageService: StorageService = {
-  async uploadFile(file, path) {
-    const key = `${path.replace(/\/$/, "")}/${Date.now()}-${file.name}`;
-    return { key, url: URL.createObjectURL(file) };
+export const storageService = {
+  async uploadFile(file: File) {
+    if (
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+      file.size > 5 * 1024 * 1024
+    )
+      throw new Error("Use a JPEG, PNG or WebP image no larger than 5 MB.");
+    const signed = await startImageUpload({
+      data: { type: file.type as "image/jpeg" | "image/png" | "image/webp", size: file.size },
+    });
+    const body = new FormData();
+    Object.entries(signed.fields).forEach(([key, value]) => body.append(key, value));
+    body.append("file", file);
+    const response = await fetch(signed.url, { method: "POST", body });
+    if (!response.ok) throw new Error("Image upload failed. Check S3 CORS and upload permissions.");
+    return finishImageUpload({ data: signed.id });
   },
-  async deleteFile() { /* no-op until S3 is wired up */ },
-  async getFileUrl(key) { return `/mock-storage/${key}`; },
 };
-
-export const storageService: StorageService = mockStorageService;

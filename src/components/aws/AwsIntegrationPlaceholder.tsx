@@ -3,8 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 /**
- * Intentional developer infrastructure marker. Drop this anywhere a mock
- * implementation stands in for a real AWS service.
+ * Learning marker: implementation and verified AWS deployment are distinct.
  */
 export function AwsIntegrationPlaceholder({
   service,
@@ -36,21 +35,28 @@ export function AwsIntegrationPlaceholder({
           </p>
           {!compact && (
             <p className="mt-1 text-sm text-muted-foreground">
-              This functionality is intentionally not connected yet.
+              Cloud adapters require configured AWS resources. Demo mode uses local data or
+              simulation; verify cloud behavior after setup.
             </p>
           )}
           <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
             <div>
-              <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">Target service</dt>
+              <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">
+                Target service
+              </dt>
               <dd className="mt-0.5 font-medium text-foreground">{service}</dd>
             </div>
             <div>
-              <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">Learning objective</dt>
+              <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">
+                Learning objective
+              </dt>
               <dd className="mt-0.5 text-foreground">{objective}</dd>
             </div>
             {location && (
               <div className="sm:col-span-2">
-                <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">Integration location</dt>
+                <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">
+                  Integration location
+                </dt>
                 <dd className="mt-0.5 font-mono text-[11px] text-foreground">{location}</dd>
               </div>
             )}

@@ -40,24 +40,40 @@ export function ProductCard({ product, className }: { product: Product; classNam
         <button
           type="button"
           onClick={() => wishlist.toggle(product.id)}
-          aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
+          aria-label={
+            saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`
+          }
           aria-pressed={saved}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-soft backdrop-blur transition-smooth hover:text-destructive"
         >
-          <Heart className={cn("h-4 w-4", saved && "fill-destructive text-destructive")} aria-hidden />
+          <Heart
+            className={cn("h-4 w-4", saved && "fill-destructive text-destructive")}
+            aria-hidden
+          />
         </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{product.category}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {product.category}
+        </p>
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
-          <Link to="/product/$id" params={{ id: product.id }} className="transition-smooth hover:text-primary">
+          <Link
+            to="/product/$id"
+            params={{ id: product.id }}
+            className="transition-smooth hover:text-primary"
+          >
             {product.name}
           </Link>
         </h3>
         <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
         <PriceDisplay price={product.price} originalPrice={product.originalPrice} />
-        <p className={cn("text-xs font-medium", outOfStock ? "text-destructive" : product.stock <= 10 ? "text-warning" : "text-success")}>
+        <p
+          className={cn(
+            "text-xs font-medium",
+            outOfStock ? "text-destructive" : product.stock <= 10 ? "text-warning" : "text-success",
+          )}
+        >
           {stockLabel(product.stock)}
         </p>
         <Button

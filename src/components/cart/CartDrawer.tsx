@@ -47,7 +47,9 @@ export function CartDrawer() {
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-semibold tabular-nums">{currency(t.subtotal)}</span>
               </div>
-              <p className="text-xs text-muted-foreground">Shipping and taxes are calculated at checkout.</p>
+              <p className="text-xs text-muted-foreground">
+                Shipping and taxes are calculated at checkout.
+              </p>
               <div className="grid gap-2">
                 <Button asChild variant="hero" onClick={() => setDrawerOpen(false)}>
                   <Link to="/checkout">Checkout</Link>

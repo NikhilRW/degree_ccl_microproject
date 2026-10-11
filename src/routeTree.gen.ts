@@ -12,18 +12,22 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AwsLearningRouteImport } from './routes/aws-learning'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as DealsRouteImport } from './routes/deals'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HealthRouteImport } from './routes/health'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OrderConfirmationRouteImport } from './routes/order-confirmation'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as WebhooksRazorpayRouteImport } from './routes/webhooks.razorpay'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,6 +42,11 @@ const AboutRoute = AboutRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AwsLearningRoute = AwsLearningRouteImport.update({
@@ -70,6 +79,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -95,9 +109,19 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
   path: '/product/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebhooksRazorpayRoute = WebhooksRazorpayRouteImport.update({
+  id: '/webhooks/razorpay',
+  path: '/webhooks/razorpay',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -105,53 +129,65 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/aws-learning': typeof AwsLearningRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
   '/deals': typeof DealsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/order-confirmation': typeof OrderConfirmationRoute
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/product/$id': typeof ProductIdRoute
+  '/webhooks/razorpay': typeof WebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/aws-learning': typeof AwsLearningRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
   '/deals': typeof DealsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/order-confirmation': typeof OrderConfirmationRoute
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/product/$id': typeof ProductIdRoute
+  '/webhooks/razorpay': typeof WebhooksRazorpayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/aws-learning': typeof AwsLearningRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
   '/deals': typeof DealsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/order-confirmation': typeof OrderConfirmationRoute
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/product/$id': typeof ProductIdRoute
+  '/webhooks/razorpay': typeof WebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,70 +195,86 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/aws-learning'
     | '/cart'
     | '/categories'
     | '/checkout'
     | '/deals'
     | '/forgot-password'
+    | '/health'
     | '/login'
     | '/order-confirmation'
     | '/register'
     | '/search'
     | '/shop'
+    | '/verify-email'
     | '/product/$id'
+    | '/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/aws-learning'
     | '/cart'
     | '/categories'
     | '/checkout'
     | '/deals'
     | '/forgot-password'
+    | '/health'
     | '/login'
     | '/order-confirmation'
     | '/register'
     | '/search'
     | '/shop'
+    | '/verify-email'
     | '/product/$id'
+    | '/webhooks/razorpay'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/aws-learning'
     | '/cart'
     | '/categories'
     | '/checkout'
     | '/deals'
     | '/forgot-password'
+    | '/health'
     | '/login'
     | '/order-confirmation'
     | '/register'
     | '/search'
     | '/shop'
+    | '/verify-email'
     | '/product/$id'
+    | '/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRoute
   AwsLearningRoute: typeof AwsLearningRoute
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
   CheckoutRoute: typeof CheckoutRoute
   DealsRoute: typeof DealsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HealthRoute: typeof HealthRoute
   LoginRoute: typeof LoginRoute
   OrderConfirmationRoute: typeof OrderConfirmationRoute
   RegisterRoute: typeof RegisterRoute
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   ProductIdRoute: typeof ProductIdRoute
+  WebhooksRazorpayRoute: typeof WebhooksRazorpayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -246,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/aws-learning': {
@@ -290,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/health': {
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -325,11 +391,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$id': {
       id: '/product/$id'
       path: '/product/$id'
       fullPath: '/product/$id'
       preLoaderRoute: typeof ProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/webhooks/razorpay': {
+      id: '/webhooks/razorpay'
+      path: '/webhooks/razorpay'
+      fullPath: '/webhooks/razorpay'
+      preLoaderRoute: typeof WebhooksRazorpayRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -339,18 +419,22 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
+  AdminRoute: AdminRoute,
   AwsLearningRoute: AwsLearningRoute,
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
   CheckoutRoute: CheckoutRoute,
   DealsRoute: DealsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HealthRoute: HealthRoute,
   LoginRoute: LoginRoute,
   OrderConfirmationRoute: OrderConfirmationRoute,
   RegisterRoute: RegisterRoute,
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   ProductIdRoute: ProductIdRoute,
+  WebhooksRazorpayRoute: WebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

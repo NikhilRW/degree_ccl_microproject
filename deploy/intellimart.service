@@ -1,0 +1,25 @@
+[Unit]
+Description=IntelliMart TanStack Start application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=intellimart
+Group=intellimart
+WorkingDirectory=/opt/intellimart
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+EnvironmentFile=/opt/intellimart/.env
+ExecStart=/usr/bin/node /opt/intellimart/scripts/start.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+StandardOutput=append:/var/log/intellimart/application.log
+StandardError=append:/var/log/intellimart/application.log
+
+[Install]
+WantedBy=multi-user.target

@@ -31,7 +31,11 @@ const promises = [
   { icon: Truck, title: "Free 2-day delivery", body: "On every order above ₹20,000, nationwide." },
   { icon: ShieldCheck, title: "2-year warranty", body: "Every product covered, no fine print." },
   { icon: Cpu, title: "Expert-picked gear", body: "Curated by people who actually use it." },
-  { icon: CloudCog, title: "Built on the cloud", body: "An architecture designed to scale with you." },
+  {
+    icon: CloudCog,
+    title: "Built on the cloud",
+    body: "An architecture designed to scale with you.",
+  },
 ];
 
 function HomePage() {
@@ -48,7 +52,9 @@ function HomePage() {
         setFeatured(p);
         setCategories(c);
       })
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Failed to load"))
+      .catch(
+        (e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Failed to load"),
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -129,7 +135,9 @@ function HomePage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl font-semibold sm:text-3xl">Shop by category</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Eight departments, one obsessively curated catalogue.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Eight departments, one obsessively curated catalogue.
+            </p>
           </div>
           <Button asChild variant="ghost">
             <Link to="/categories">
@@ -149,8 +157,12 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="font-display text-2xl font-semibold sm:text-3xl">Featured this week</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Hand-picked upgrades our team is actually using.</p>
+              <h2 className="font-display text-2xl font-semibold sm:text-3xl">
+                Featured this week
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Hand-picked upgrades our team is actually using.
+              </p>
             </div>
             <Button asChild variant="ghost">
               <Link to="/shop">
@@ -169,13 +181,16 @@ function HomePage() {
         <div className="overflow-hidden rounded-3xl bg-ink px-6 py-12 text-ink-foreground sm:px-12">
           <div className="flex flex-wrap items-center justify-between gap-8">
             <div className="max-w-xl">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">For developers</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                For developers
+              </p>
               <h2 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">
                 This storefront is a cloud engineering lab.
               </h2>
               <p className="mt-3 text-sm text-ink-foreground/70">
-                Every backend concern — auth, catalogue, cart, orders, storage, payments, notifications — sits behind a
-                mock service with a clean interface, waiting to be replaced with real AWS infrastructure.
+                Every backend concern — auth, catalogue, cart, orders, storage, payments,
+                notifications — sits behind a mock service with a clean interface, waiting to be
+                replaced with real AWS infrastructure.
               </p>
             </div>
             <Button asChild size="xl" variant="hero">

@@ -11,9 +11,16 @@ export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
       { title: "Your cart — IntelliMart" },
-      { name: "description", content: "Review the items in your IntelliMart cart, update quantities and continue to checkout." },
+      {
+        name: "description",
+        content:
+          "Review the items in your IntelliMart cart, update quantities and continue to checkout.",
+      },
       { property: "og:title", content: "Your cart — IntelliMart" },
-      { property: "og:description", content: "Review items, update quantities and continue to checkout." },
+      {
+        property: "og:description",
+        content: "Review items, update quantities and continue to checkout.",
+      },
     ],
   }),
   component: CartPage,
@@ -51,7 +58,9 @@ function CartPage() {
               {active.map((i) => (
                 <CartItemRow key={i.productId} item={i} />
               ))}
-              {active.length === 0 && <p className="py-8 text-sm text-muted-foreground">No active items.</p>}
+              {active.length === 0 && (
+                <p className="py-8 text-sm text-muted-foreground">No active items.</p>
+              )}
             </div>
 
             {saved.length > 0 && (

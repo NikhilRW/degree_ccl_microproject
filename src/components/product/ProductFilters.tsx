@@ -27,7 +27,9 @@ export function ProductFilters({
   return (
     <div className="space-y-8">
       <fieldset>
-        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Category</legend>
+        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Category
+        </legend>
         <div className="mt-4 space-y-3">
           {categories.map((c) => {
             const checked = state.categories.includes(c.id);
@@ -39,7 +41,9 @@ export function ProductFilters({
                   onCheckedChange={() =>
                     onChange({
                       ...state,
-                      categories: checked ? state.categories.filter((x) => x !== c.id) : [...state.categories, c.id],
+                      categories: checked
+                        ? state.categories.filter((x) => x !== c.id)
+                        : [...state.categories, c.id],
                     })
                   }
                 />
@@ -53,7 +57,9 @@ export function ProductFilters({
       </fieldset>
 
       <fieldset>
-        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Max price</legend>
+        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Max price
+        </legend>
         <div className="mt-5 px-1">
           <Slider
             value={[state.maxPrice]}
@@ -71,7 +77,9 @@ export function ProductFilters({
       </fieldset>
 
       <fieldset>
-        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Rating</legend>
+        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Rating
+        </legend>
         <div className="mt-4 space-y-3">
           {[0, 4, 4.5].map((r) => (
             <div key={r} className="flex items-center gap-2.5">

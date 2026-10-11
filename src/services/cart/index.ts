@@ -1,2 +1,2 @@
 export * from "./types";
-export { cartService, mockCartService } from "./mockCartService";
+export { cartService } from "./cartService";

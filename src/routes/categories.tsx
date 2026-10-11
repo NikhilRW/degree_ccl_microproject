@@ -9,7 +9,11 @@ export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
       { title: "All categories — IntelliMart" },
-      { name: "description", content: "Browse IntelliMart departments: electronics, computing, home, fashion, gaming, books and smart devices." },
+      {
+        name: "description",
+        content:
+          "Browse IntelliMart departments: electronics, computing, home, fashion, gaming, books and smart devices.",
+      },
       { property: "og:title", content: "All categories — IntelliMart" },
       { property: "og:description", content: "Eight departments, one curated catalogue." },
     ],
@@ -20,7 +24,10 @@ export const Route = createFileRoute("/categories")({
 function CategoriesPage() {
   const [categories, setCategories] = useState<Category[] | null>(null);
   useEffect(() => {
-    productService.getCategories().then(setCategories).catch(() => setCategories([]));
+    productService
+      .getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
   }, []);
 
   return (

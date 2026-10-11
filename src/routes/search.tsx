@@ -18,10 +18,18 @@ export const Route = createFileRoute("/search")({
     return {
       meta: [
         { title },
-        { name: "description", content: q ? `Products matching "${q}" at IntelliMart.` : "Search the IntelliMart catalogue." },
+        {
+          name: "description",
+          content: q
+            ? `Products matching "${q}" at IntelliMart.`
+            : "Search the IntelliMart catalogue.",
+        },
         { name: "robots", content: "noindex" },
         { property: "og:title", content: title },
-        { property: "og:description", content: "Search the IntelliMart catalogue by name, category or description." },
+        {
+          property: "og:description",
+          content: "Search the IntelliMart catalogue by name, category or description.",
+        },
       ],
     };
   },
@@ -40,7 +48,9 @@ function SearchPage() {
     searchService
       .search(q)
       .then((r) => !cancelled && setResults(r))
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Search failed"))
+      .catch(
+        (e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Search failed"),
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -53,7 +63,9 @@ function SearchPage() {
         {q ? <>Search results for &ldquo;{q}&rdquo;</> : "Search"}
       </h1>
       <p className="mt-2 text-sm text-muted-foreground" aria-live="polite">
-        {loading ? "Searching…" : `${results.length} ${results.length === 1 ? "result" : "results"}`}
+        {loading
+          ? "Searching…"
+          : `${results.length} ${results.length === 1 ? "result" : "results"}`}
       </p>
 
       <div className="mt-6 max-w-md">

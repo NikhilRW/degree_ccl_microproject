@@ -1,10 +1,7 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Project Guidelines
+
+- Preserve published Git history; do not force-push or rewrite existing commits.
+- Keep the TanStack Start application self-hosted and dependencies explicit.
+- Keep credentials and AWS SDK access server-only. Never commit secrets.
+- Demo mode is for synthetic lab data; do not imply it provides secure authentication.
+- Implement server-side authorization before enabling cloud administration.

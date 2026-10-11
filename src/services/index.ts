@@ -10,8 +10,5 @@ export { productService } from "./products";
 export { cartService } from "./cart";
 export { orderService } from "./orders";
 export { storageService } from "./storage";
-export { notificationService } from "./notifications";
 export { analyticsService } from "./analytics";
-export { paymentService } from "./payments";
 export { searchService } from "./search";
-export { apiClient } from "./api/apiClient";

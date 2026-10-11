@@ -20,7 +20,10 @@ export const Route = createFileRoute("/product/$id")({
   head: ({ params }) => ({
     meta: [
       { title: `Product ${params.id} — IntelliMart` },
-      { name: "description", content: "Full specifications, reviews, shipping and returns for this IntelliMart product." },
+      {
+        name: "description",
+        content: "Full specifications, reviews, shipping and returns for this IntelliMart product.",
+      },
       { property: "og:title", content: "IntelliMart product" },
       { property: "og:description", content: "Specifications, reviews, shipping and returns." },
     ],
@@ -57,7 +60,10 @@ function ProductPage() {
           setReviews(await productService.getReviews(p.id));
         }
       })
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Failed to load product"))
+      .catch(
+        (e: unknown) =>
+          !cancelled && setError(e instanceof Error ? e.message : "Failed to load product"),
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -65,7 +71,12 @@ function ProductPage() {
   }, [id]);
 
   if (loading) return <LoadingState label="Loading product" />;
-  if (error) return <div className="mx-auto max-w-3xl px-4 py-16"><ErrorState message={error} /></div>;
+  if (error)
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16">
+        <ErrorState message={error} />
+      </div>
+    );
   if (!product)
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
@@ -87,9 +98,14 @@ function ProductPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
-        <Link to="/" className="hover:text-primary">Home</Link> <span aria-hidden>/</span>{" "}
-        <Link to="/shop" className="hover:text-primary">Shop</Link> <span aria-hidden>/</span>{" "}
-        <span className="text-foreground">{product.name}</span>
+        <Link to="/" className="hover:text-primary">
+          Home
+        </Link>{" "}
+        <span aria-hidden>/</span>{" "}
+        <Link to="/shop" className="hover:text-primary">
+          Shop
+        </Link>{" "}
+        <span aria-hidden>/</span> <span className="text-foreground">{product.name}</span>
       </nav>
 
       <div className="grid gap-12 lg:grid-cols-2">
@@ -124,7 +140,9 @@ function ProductPage() {
         </div>
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{product.category}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {product.category}
+          </p>
           <h1 className="mt-2 font-display text-3xl font-semibold leading-tight">{product.name}</h1>
           <div className="mt-3">
             <RatingStars rating={product.rating} reviewCount={product.reviewCount} size="md" />
@@ -132,7 +150,16 @@ function ProductPage() {
           <div className="mt-5">
             <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="lg" />
           </div>
-          <p className={cn("mt-3 text-sm font-medium", outOfStock ? "text-destructive" : product.stock <= 10 ? "text-warning" : "text-success")}>
+          <p
+            className={cn(
+              "mt-3 text-sm font-medium",
+              outOfStock
+                ? "text-destructive"
+                : product.stock <= 10
+                  ? "text-warning"
+                  : "text-success",
+            )}
+          >
             {stockLabel(product.stock)}
           </p>
 
@@ -160,7 +187,10 @@ function ProductPage() {
               aria-pressed={wishlist.has(product.id)}
               onClick={() => wishlist.toggle(product.id)}
             >
-              <Heart className={cn(wishlist.has(product.id) && "fill-destructive text-destructive")} aria-hidden />
+              <Heart
+                className={cn(wishlist.has(product.id) && "fill-destructive text-destructive")}
+                aria-hidden
+              />
             </Button>
           </div>
 
@@ -183,9 +213,9 @@ function ProductPage() {
           <AwsIntegrationPlaceholder
             className="mt-6"
             compact
-            service="Amazon DynamoDB + API Gateway + Lambda"
-            objective="Serve this product from a Products table instead of the mock catalogue."
-            location="src/services/products/mockProductService.ts"
+            service="TanStack server functions → Amazon DynamoDB"
+            objective="Served from the local application store in demo mode or DynamoDB in configured cloud mode. AWS deployment verification is still required."
+            location="src/server/catalogue.functions.ts"
           />
         </div>
       </div>
@@ -196,7 +226,10 @@ function ProductPage() {
           <TabsTrigger value="specifications">Specifications</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
         </TabsList>
-        <TabsContent value="description" className="max-w-3xl pt-6 text-sm leading-relaxed text-muted-foreground">
+        <TabsContent
+          value="description"
+          className="max-w-3xl pt-6 text-sm leading-relaxed text-muted-foreground"
+        >
           {product.description}
         </TabsContent>
         <TabsContent value="specifications" className="pt-6">

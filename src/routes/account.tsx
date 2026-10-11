@@ -3,19 +3,26 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/common/states";
-import { AwsIntegrationPlaceholder } from "@/components/aws/AwsIntegrationPlaceholder";
+import { ProfileEditor } from "@/components/account/ProfileEditor";
+import { ReviewForm } from "@/components/account/ReviewForm";
+import { reconcileMyOrder } from "@/server/orders.functions";
+import { toast } from "sonner";
+import { payExistingOrder } from "@/services/payments/checkout";
+import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
-import { orderService } from "@/services";
-import { products } from "@/data/products";
-import type { Order } from "@/types";
+import { orderService, productService } from "@/services";
+import type { Order, Product } from "@/types";
 import { currency, formatDate } from "@/utils/format";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
       { title: "Your account — IntelliMart" },
-      { name: "description", content: "Manage your IntelliMart profile, review past orders and revisit your wishlist." },
+      {
+        name: "description",
+        content: "Manage your IntelliMart profile, review past orders and revisit your wishlist.",
+      },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Your account — IntelliMart" },
       { property: "og:description", content: "Profile, orders and wishlist in one place." },
@@ -26,12 +33,39 @@ export const Route = createFileRoute("/account")({
 
 function AccountPage() {
   const { user, signOut } = useAuth();
+  const { refresh: refreshCart } = useCart();
   const { items: wishlist, remove } = useWishlist();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [paying, setPaying] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) orderService.list(user.id).then(setOrders);
+    let active = true;
+    setOrders([]);
+    if (user)
+      orderService
+        .list(user.id)
+        .then((value) => {
+          if (active) setOrders(value);
+        })
+        .catch((error: Error) => toast.error(error.message));
+    return () => {
+      active = false;
+    };
   }, [user]);
+
+  useEffect(() => {
+    let active = true;
+    productService
+      .list()
+      .then((items) => {
+        if (active) setProducts(items);
+      })
+      .catch(console.error);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (!user) {
     return (
@@ -39,7 +73,11 @@ function AccountPage() {
         <EmptyState
           title="You're signed out"
           description="Sign in to view your profile, orders and wishlist."
-          action={<Button asChild variant="hero"><Link to="/login">Sign in</Link></Button>}
+          action={
+            <Button asChild variant="hero">
+              <Link to="/login">Sign in</Link>
+            </Button>
+          }
         />
       </div>
     );
@@ -56,7 +94,9 @@ function AccountPage() {
           <h1 className="font-display text-3xl font-semibold">Hi, {user.name.split(" ")[0]}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
         </div>
-        <Button variant="outline" onClick={() => void signOut()}>Sign out</Button>
+        <Button variant="outline" onClick={() => void signOut()}>
+          Sign out
+        </Button>
       </div>
 
       <Tabs defaultValue="orders" className="mt-10">
@@ -68,25 +108,107 @@ function AccountPage() {
 
         <TabsContent value="orders" id="orders" className="mt-6 space-y-4">
           {orders.length === 0 ? (
-            <EmptyState title="No orders yet" description="Your completed orders will appear here." action={<Button asChild><Link to="/shop">Start shopping</Link></Button>} />
+            <EmptyState
+              title="No orders yet"
+              description="Your completed orders will appear here."
+              action={
+                <Button asChild>
+                  <Link to="/shop">Start shopping</Link>
+                </Button>
+              }
+            />
           ) : (
             orders.map((o) => (
               <article key={o.id} className="rounded-2xl border border-border bg-card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="font-semibold">{o.id}</h2>
-                    <p className="text-xs text-muted-foreground">Placed {formatDate(o.createdAt)} · {o.status}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Placed {formatDate(o.createdAt)} · {o.status} · Payment: {o.payment.status}
+                    </p>
                   </div>
-                  <span className="text-sm font-semibold tabular-nums">{currency(o.totals.total)}</span>
+                  <span className="text-sm font-semibold tabular-nums">
+                    {currency(o.totals.total)}
+                  </span>
                 </div>
                 <ul className="mt-4 flex flex-wrap gap-3">
                   {o.items.map((i) => (
-                    <li key={i.productId} className="flex items-center gap-2 rounded-xl border border-border p-2">
+                    <li
+                      key={i.productId}
+                      className="flex items-center gap-2 rounded-xl border border-border p-2"
+                    >
                       <img src={i.image} alt="" className="h-10 w-10 rounded-lg object-cover" />
-                      <span className="text-xs">{i.name} × {i.quantity}</span>
+                      <span className="text-xs">
+                        {i.name} × {i.quantity}
+                      </span>
+                      {o.status === "delivered" && <ReviewForm productId={i.productId} />}
                     </li>
                   ))}
                 </ul>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {o.status === "pending" && (
+                    <Button
+                      size="sm"
+                      disabled={!!paying}
+                      onClick={() => {
+                        setPaying(o.id);
+                        void payExistingOrder(o.id)
+                          .then(async (value) => {
+                            setOrders((current) =>
+                              current.map((item) => (item.id === value.id ? value : item)),
+                            );
+                            await refreshCart().catch(() =>
+                              toast.error("Payment confirmed; reload to refresh the cart."),
+                            );
+                          })
+                          .catch((error: Error) => toast.error(error.message))
+                          .finally(() => setPaying(null));
+                      }}
+                    >
+                      {paying === o.id ? "Opening checkout…" : "Resume test payment"}
+                    </Button>
+                  )}
+                  {["pending", "processing"].includes(o.status) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (window.confirm(`Cancel ${o.id}? Paid test orders will be refunded.`))
+                          void orderService.cancel(o.id).then(
+                            (value) =>
+                              setOrders((current) =>
+                                current.map((item) => (item.id === value.id ? value : item)),
+                              ),
+                            (error: Error) => toast.error(error.message),
+                          );
+                      }}
+                    >
+                      Cancel order
+                    </Button>
+                  )}
+                  {(o.status === "pending" || o.payment.status === "refund_pending") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        void reconcileMyOrder({ data: o.id }).then(
+                          (value) =>
+                            setOrders((current) =>
+                              current.map((item) => (item.id === value.id ? value : item)),
+                            ),
+                          (error: Error) => toast.error(error.message),
+                        );
+                      }}
+                    >
+                      Verify / reconcile payment
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to="/order-confirmation" search={{ id: o.id }}>
+                      Order details
+                    </Link>
+                  </Button>
+                </div>
               </article>
             ))
           )}
@@ -94,17 +216,38 @@ function AccountPage() {
 
         <TabsContent value="wishlist" className="mt-6">
           {wishlistProducts.length === 0 ? (
-            <EmptyState title="Your wishlist is empty" description="Tap the heart on any product to save it." action={<Button asChild><Link to="/shop">Browse products</Link></Button>} />
+            <EmptyState
+              title="Your wishlist is empty"
+              description="Tap the heart on any product to save it."
+              action={
+                <Button asChild>
+                  <Link to="/shop">Browse products</Link>
+                </Button>
+              }
+            />
           ) : (
             <ul className="grid gap-4 sm:grid-cols-2">
               {wishlistProducts.map((p) => (
-                <li key={p.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
+                <li
+                  key={p.id}
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"
+                >
                   <img src={p.images[0]} alt="" className="h-16 w-16 rounded-xl object-cover" />
                   <div className="flex-1">
-                    <Link to="/product/$id" params={{ id: p.id }} className="text-sm font-semibold hover:underline">{p.name}</Link>
-                    <p className="text-sm text-muted-foreground tabular-nums">{currency(p.price)}</p>
+                    <Link
+                      to="/product/$id"
+                      params={{ id: p.id }}
+                      className="text-sm font-semibold hover:underline"
+                    >
+                      {p.name}
+                    </Link>
+                    <p className="text-sm text-muted-foreground tabular-nums">
+                      {currency(p.price)}
+                    </p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => remove(p.id)}>Remove</Button>
+                  <Button variant="ghost" size="sm" onClick={() => remove(p.id)}>
+                    Remove
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -113,14 +256,20 @@ function AccountPage() {
 
         <TabsContent value="profile" className="mt-6 space-y-6">
           <dl className="grid gap-5 rounded-2xl border border-border bg-card p-6 sm:grid-cols-2">
-            <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name</dt><dd className="mt-1 text-sm">{user.name}</dd></div>
-            <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</dt><dd className="mt-1 text-sm">{user.email}</dd></div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Name
+              </dt>
+              <dd className="mt-1 text-sm">{user.name}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Email
+              </dt>
+              <dd className="mt-1 text-sm">{user.email}</dd>
+            </div>
           </dl>
-          <AwsIntegrationPlaceholder
-            service="Amazon Cognito"
-            objective="Replace the mock session with Cognito user pools, hosted UI and JWT-backed profile reads."
-            location="src/services/auth/mockAuthService.ts"
-          />
+          <ProfileEditor key={user.id} />
         </TabsContent>
       </Tabs>
     </div>

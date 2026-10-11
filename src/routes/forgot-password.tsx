@@ -1,43 +1,91 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
+import { completePasswordReset, requestPasswordReset } from "@/server/auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/forgot-password")({
-  head: () => ({
-    meta: [
-      { title: "Reset password — IntelliMart" },
-      { name: "description", content: "Request a password reset link for your IntelliMart account." },
-      { property: "og:title", content: "Reset password — IntelliMart" },
-      { property: "og:description", content: "Request an IntelliMart password reset link." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Reset password — IntelliMart" }] }),
   component: ForgotPasswordPage,
 });
-
 function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
-
+  const [done, setDone] = useState(false);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      if (!sent) {
+        await requestPasswordReset({ data: { email } });
+        setSent(true);
+      } else {
+        await completePasswordReset({ data: { email, code, password } });
+        setDone(true);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Reset failed");
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <div className="mx-auto flex max-w-md flex-col px-4 py-20">
+    <div className="mx-auto max-w-md px-4 py-20">
       <h1 className="font-display text-3xl font-semibold">Reset your password</h1>
-      <p className="mt-2 text-sm text-muted-foreground">We'll email you a reset link once an email service is connected.</p>
-      {sent ? (
-        <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-sm">
-          <p>If an account exists for that address, a reset link is on its way.</p>
-          <Button asChild className="mt-5 w-full" variant="outline"><Link to="/login">Back to sign in</Link></Button>
-        </div>
+      {done ? (
+        <p className="mt-6">
+          Password reset completed.{" "}
+          <Link to="/login" className="text-primary">
+            Sign in
+          </Link>
+        </p>
       ) : (
-        <form
-          onSubmit={(e) => { e.preventDefault(); setSent(true); }}
-          className="mt-8 space-y-4 rounded-2xl border border-border bg-card p-6"
-        >
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required />
-          </div>
-          <Button type="submit" variant="hero" className="w-full">Send reset link</Button>
+        <form onSubmit={submit} className="mt-6 space-y-4 rounded-xl border border-border p-6">
+          <Label htmlFor="reset-email">Email</Label>
+          <Input
+            id="reset-email"
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          {sent && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                If the account is eligible, Cognito sends a reset code. Demo mode simulates this
+                operation; use 000000.
+              </p>
+              <Label htmlFor="reset-code">Six-digit code</Label>
+              <Input
+                id="reset-code"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                required
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+              />
+              <Label htmlFor="reset-password">New password</Label>
+              <Input
+                id="reset-password"
+                type="password"
+                minLength={8}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </>
+          )}
+          <Button type="submit" disabled={busy}>
+            {sent ? "Reset password" : "Request reset code"}
+          </Button>
+          <Link to="/login" className="block text-sm text-primary">
+            Back to sign in
+          </Link>
         </form>
       )}
     </div>

@@ -15,7 +15,7 @@ const totals = (subtotal: number) => ({
   total: Math.round(subtotal * 1.13) + (subtotal > 20000 ? 0 : 199),
 });
 
-/** Mock order history. AWS LEARNING ZONE: replaced by DynamoDB `Orders` via Lambda. */
+/** Sample demo-only orders. Cloud seed tooling does not create these records. */
 export const orders: Order[] = [
   {
     id: "IM-2026-10428",

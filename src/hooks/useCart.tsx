@@ -1,82 +1,123 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { cartService } from "@/services";
+import { useAuth } from "./useAuth";
 import type { Cart, DeliveryMethod } from "@/types";
 
-/**
- * Cart state lives in React + localStorage today.
- * AWS LEARNING ZONE: swap `cartService` for an AWS-backed implementation and
- * this hook keeps working unchanged (server-side persistence per Cognito user).
- */
 interface CartContextValue {
   cart: Cart;
   loading: boolean;
   count: number;
-  add: (productId: string, quantity?: number) => Promise<void>;
-  update: (productId: string, quantity: number) => Promise<void>;
-  remove: (productId: string) => Promise<void>;
-  toggleSaveForLater: (productId: string) => Promise<void>;
+  add: (id: string, quantity?: number) => Promise<void>;
+  update: (id: string, quantity: number) => Promise<void>;
+  remove: (id: string) => Promise<void>;
+  toggleSaveForLater: (id: string) => Promise<void>;
   clear: () => Promise<void>;
+  refresh: () => Promise<void>;
   totals: (delivery?: DeliveryMethod) => ReturnType<typeof cartService.calculateTotals>;
   drawerOpen: boolean;
-  setDrawerOpen: (open: boolean) => void;
+  setDrawerOpen: (value: boolean) => void;
 }
-
 const CartContext = createContext<CartContextValue | null>(null);
-const empty: Cart = { items: [], updatedAt: new Date().toISOString() };
-
+const emptyCart = (): Cart => ({ items: [], updatedAt: new Date().toISOString() });
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<Cart>(empty);
+  const { user, loading: authLoading } = useAuth();
+  const [cart, setCart] = useState<Cart>(emptyCart);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
+  const identity = useRef<string | null>(null);
+  identity.current = user?.id ?? null;
+  const apply = useCallback(async (work: () => Promise<Cart>) => {
+    const owner = identity.current;
+    const result = await work();
+    if (identity.current === owner) setCart(result);
+  }, []);
+  const refresh = useCallback(() => apply(() => cartService.getCart()), [apply]);
   useEffect(() => {
-    cartService.getCart().then(setCart).finally(() => setLoading(false));
-  }, []);
-
-  const add = useCallback(async (productId: string, quantity = 1) => {
-    setCart(await cartService.addItem(productId, quantity));
-    toast.success("Added to cart");
-    setDrawerOpen(true);
-  }, []);
-
-  const update = useCallback(async (productId: string, quantity: number) => {
-    setCart(await cartService.updateQuantity(productId, quantity));
-  }, []);
-
-  const remove = useCallback(async (productId: string) => {
-    setCart(await cartService.removeItem(productId));
-    toast("Removed from cart");
-  }, []);
-
-  const toggleSaveForLater = useCallback(async (productId: string) => {
-    setCart(await cartService.toggleSaveForLater(productId));
-  }, []);
-
-  const clear = useCallback(async () => setCart(await cartService.clear()), []);
-
-  const value = useMemo<CartContextValue>(
+    if (authLoading) return;
+    let current = true;
+    setCart(emptyCart());
+    setLoading(true);
+    cartService
+      .getCart()
+      .then((value) => {
+        if (current) setCart(value);
+      })
+      .catch(() => toast.error("Could not load your cart"))
+      .finally(() => {
+        if (current) setLoading(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [user?.id, authLoading]);
+  const add = useCallback(
+    async (id: string, quantity = 1) => {
+      try {
+        await apply(() => cartService.addItem(id, quantity));
+        toast.success("Added to cart");
+        setDrawerOpen(true);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not add item");
+      }
+    },
+    [apply],
+  );
+  const update = useCallback(
+    async (id: string, quantity: number) => {
+      try {
+        await apply(() => cartService.updateQuantity(id, quantity));
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not update cart");
+      }
+    },
+    [apply],
+  );
+  const remove = useCallback(
+    async (id: string) => {
+      await apply(() => cartService.removeItem(id));
+      toast("Removed from cart");
+    },
+    [apply],
+  );
+  const toggleSaveForLater = useCallback(
+    (id: string) => apply(() => cartService.toggleSaveForLater(id)),
+    [apply],
+  );
+  const clear = useCallback(() => apply(() => cartService.clear()), [apply]);
+  const value = useMemo(
     () => ({
       cart,
       loading,
-      count: cart.items.filter((i) => !i.savedForLater).reduce((s, i) => s + i.quantity, 0),
+      count: cart.items
+        .filter((item) => !item.savedForLater)
+        .reduce((sum, item) => sum + item.quantity, 0),
       add,
       update,
       remove,
       toggleSaveForLater,
       clear,
-      totals: (delivery: DeliveryMethod = "standard") => cartService.calculateTotals(cart, delivery),
+      refresh,
+      totals: (delivery: DeliveryMethod = "standard") =>
+        cartService.calculateTotals(cart, delivery),
       drawerOpen,
       setDrawerOpen,
     }),
-    [cart, loading, add, update, remove, toggleSaveForLater, clear, drawerOpen],
+    [cart, loading, add, update, remove, toggleSaveForLater, clear, refresh, drawerOpen],
   );
-
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
-
 export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used inside CartProvider");
-  return ctx;
+  const context = useContext(CartContext);
+  if (!context) throw new Error("useCart must be used inside CartProvider");
+  return context;
 }

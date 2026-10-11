@@ -6,7 +6,11 @@ import { cn } from "@/lib/utils";
 
 export function LoadingSkeleton({ count = 8, className }: { count?: number; className?: string }) {
   return (
-    <div className={cn("grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", className)} aria-busy="true" aria-live="polite">
+    <div
+      className={cn("grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", className)}
+      aria-busy="true"
+      aria-live="polite"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="space-y-3 rounded-2xl border border-border bg-card p-4">
           <Skeleton className="aspect-square w-full rounded-xl" />
@@ -22,7 +26,10 @@ export function LoadingSkeleton({ count = 8, className }: { count?: number; clas
 
 export function LoadingState({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground" aria-live="polite">
+    <div
+      className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground"
+      aria-live="polite"
+    >
       <RefreshCw className="h-5 w-5 animate-spin" aria-hidden />
       <p className="text-sm">{label}…</p>
     </div>
@@ -54,10 +61,15 @@ export function EmptyState({
 
 export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
   return (
-    <div role="alert" className="flex flex-col items-center justify-center rounded-2xl border border-destructive/25 bg-destructive/5 px-6 py-16 text-center">
+    <div
+      role="alert"
+      className="flex flex-col items-center justify-center rounded-2xl border border-destructive/25 bg-destructive/5 px-6 py-16 text-center"
+    >
       <AlertTriangle className="mb-4 h-6 w-6 text-destructive" aria-hidden />
       <h3 className="text-lg font-semibold">Something went wrong</h3>
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">{message ?? "We couldn't complete that request. Please try again."}</p>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
+        {message ?? "We couldn't complete that request. Please try again."}
+      </p>
       {onRetry && (
         <Button className="mt-6" variant="outline" onClick={onRetry}>
           Try again

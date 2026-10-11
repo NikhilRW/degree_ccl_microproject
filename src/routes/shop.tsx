@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SlidersHorizontal } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductFilters, type FilterState } from "@/components/product/ProductFilters";
 import { ProductGrid } from "@/components/product/ProductGrid";
@@ -20,10 +26,14 @@ export const Route = createFileRoute("/shop")({
       { title: "Shop all products — IntelliMart" },
       {
         name: "description",
-        content: "Filter and sort the full IntelliMart catalogue: electronics, computing, gaming, smart devices and more.",
+        content:
+          "Filter and sort the full IntelliMart catalogue: electronics, computing, gaming, smart devices and more.",
       },
       { property: "og:title", content: "Shop all products — IntelliMart" },
-      { property: "og:description", content: "Filter by category, price and rating across the full catalogue." },
+      {
+        property: "og:description",
+        content: "Filter by category, price and rating across the full catalogue.",
+      },
     ],
   }),
   component: ShopPage,
@@ -38,6 +48,7 @@ function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<NonNullable<ProductQuery["sort"]>>("featured");
+  const [priceRange, setPriceRange] = useState({ min: 0, max: PRICE_MAX });
   const [filters, setFilters] = useState<FilterState>({
     categories: category ? [category] : [],
     maxPrice: PRICE_MAX,
@@ -49,7 +60,18 @@ function ShopPage() {
   }, [category]);
 
   useEffect(() => {
-    productService.getCategories().then(setCategories).catch(() => setCategories([]));
+    productService
+      .getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+    productService
+      .getPriceRange()
+      .then((range) => {
+        const maximum = Math.max(500, Math.ceil(range.max / 500) * 500);
+        setPriceRange({ min: 0, max: maximum });
+        setFilters((current) => ({ ...current, maxPrice: maximum }));
+      })
+      .catch(() => setError("Could not load catalogue price limits"));
   }, []);
 
   useEffect(() => {
@@ -57,16 +79,30 @@ function ShopPage() {
     setLoading(true);
     setError(null);
     productService
-      .list({ categories: filters.categories, maxPrice: filters.maxPrice, minRating: filters.minRating, sort })
-      .then((list) => !cancelled && setProducts(sale ? list.filter((p) => p.originalPrice > p.price) : list))
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Failed to load products"))
+      .list({
+        categories: filters.categories,
+        maxPrice: filters.maxPrice,
+        minRating: filters.minRating,
+        sort,
+      })
+      .then(
+        (list) =>
+          !cancelled && setProducts(sale ? list.filter((p) => p.originalPrice > p.price) : list),
+      )
+      .catch(
+        (e: unknown) =>
+          !cancelled && setError(e instanceof Error ? e.message : "Failed to load products"),
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
   }, [filters, sort, sale]);
 
-  const reset = () => setFilters({ categories: [], maxPrice: PRICE_MAX, minRating: 0 });
+  const reset = useCallback(
+    () => setFilters({ categories: [], maxPrice: priceRange.max, minRating: 0 }),
+    [priceRange.max],
+  );
 
   const filterPanel = useMemo(
     () => (
@@ -74,17 +110,19 @@ function ShopPage() {
         categories={categories}
         state={filters}
         onChange={setFilters}
-        priceRange={{ min: 1000, max: PRICE_MAX }}
+        priceRange={priceRange}
         onReset={reset}
       />
     ),
-    [categories, filters],
+    [categories, filters, priceRange, reset],
   );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <header className="mb-8">
-        <h1 className="font-display text-3xl font-semibold sm:text-4xl">{sale ? "Deals" : "Shop"}</h1>
+        <h1 className="font-display text-3xl font-semibold sm:text-4xl">
+          {sale ? "Deals" : "Shop"}
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {sale ? "Everything currently marked down." : "The full IntelliMart catalogue."}
         </p>

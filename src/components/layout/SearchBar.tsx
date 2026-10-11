@@ -3,7 +3,13 @@ import { Search } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
 
-export function SearchBar({ className, initialValue = "" }: { className?: string; initialValue?: string }) {
+export function SearchBar({
+  className,
+  initialValue = "",
+}: {
+  className?: string;
+  initialValue?: string;
+}) {
   const [value, setValue] = useState(initialValue);
   const navigate = useNavigate();
 
@@ -19,7 +25,10 @@ export function SearchBar({ className, initialValue = "" }: { className?: string
       <label htmlFor="site-search" className="sr-only">
         Search products
       </label>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden
+      />
       <input
         id="site-search"
         type="search"

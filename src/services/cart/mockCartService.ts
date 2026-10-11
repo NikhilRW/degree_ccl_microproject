@@ -1,12 +1,14 @@
-import type { Cart, CartTotals } from "@/types";
-import { products } from "@/data/products";
+import type { Cart } from "@/types";
+import { calculateTotals } from "@/server/pricing";
+import { productService } from "../products";
 import { readLocal, writeLocal } from "../serviceUtils";
 import type { CartService } from "./types";
 
 const KEY = "intellimart.cart";
 type StoredItem = { productId: string; quantity: number; savedForLater?: boolean };
 
-function hydrate(stored: StoredItem[]): Cart {
+async function hydrate(stored: StoredItem[]): Promise<Cart> {
+  const products = await productService.list();
   return {
     items: stored
       .map((s) => {
@@ -18,18 +20,25 @@ function hydrate(stored: StoredItem[]): Cart {
   };
 }
 
-function read(): StoredItem[] { return readLocal<StoredItem[]>(KEY, []); }
-function write(items: StoredItem[]): Cart { writeLocal(KEY, items); return hydrate(items); }
+function read(): StoredItem[] {
+  return readLocal<StoredItem[]>(KEY, []);
+}
+function write(items: StoredItem[]): Promise<Cart> {
+  writeLocal(KEY, items);
+  return hydrate(items);
+}
 
 /**
  * AWS LEARNING ZONE — cart persistence boundary.
  * Today: localStorage (guest cart).
- * Later: DynamoDB `Cart` table keyed by Cognito sub, written through Lambda.
- * `calculateTotals` should eventually be a Lambda (`calculateCart`) so pricing
+ * Later: DynamoDB records keyed by verified Cognito identity through server functions.
+ * `calculateTotals` must become authoritative server-side logic so pricing
  * and tax rules cannot be tampered with in the browser.
  */
 export const mockCartService: CartService = {
-  async getCart() { return hydrate(read()); },
+  async getCart() {
+    return hydrate(read());
+  },
   async addItem(productId, quantity = 1) {
     const items = read();
     const existing = items.find((i) => i.productId === productId);
@@ -43,19 +52,18 @@ export const mockCartService: CartService = {
     else items = items.map((i) => (i.productId === productId ? { ...i, quantity } : i));
     return write(items);
   },
-  async removeItem(productId) { return write(read().filter((i) => i.productId !== productId)); },
+  async removeItem(productId) {
+    return write(read().filter((i) => i.productId !== productId));
+  },
   async toggleSaveForLater(productId) {
-    return write(read().map((i) => (i.productId === productId ? { ...i, savedForLater: !i.savedForLater } : i)));
+    return write(
+      read().map((i) =>
+        i.productId === productId ? { ...i, savedForLater: !i.savedForLater } : i,
+      ),
+    );
   },
-  async clear() { return write([]); },
-  calculateTotals(cart, delivery = "standard"): CartTotals {
-    const active = cart.items.filter((i) => !i.savedForLater);
-    const subtotal = active.reduce((s, i) => s + i.product.price * i.quantity, 0);
-    const discount = active.reduce((s, i) => s + (i.product.originalPrice - i.product.price) * i.quantity, 0);
-    const shipping = subtotal === 0 ? 0 : delivery === "express" ? 499 : subtotal > 20000 ? 0 : 199;
-    const tax = Math.round(subtotal * 0.18);
-    return { subtotal, discount, shipping, tax, total: subtotal + shipping + tax };
+  async clear() {
+    return write([]);
   },
+  calculateTotals,
 };
-
-export const cartService: CartService = mockCartService;

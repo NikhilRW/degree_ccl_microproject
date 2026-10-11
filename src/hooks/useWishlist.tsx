@@ -1,54 +1,99 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { readLocal, writeLocal } from "@/services/serviceUtils";
+import { changeWishlist, getShoppingState } from "@/server/shopping.functions";
+import { useAuth } from "./useAuth";
 import type { WishlistItem } from "@/types";
-
-/** AWS LEARNING ZONE: move to a DynamoDB `Wishlist` table keyed by user id. */
-const KEY = "intellimart.wishlist";
 
 interface WishlistContextValue {
   items: WishlistItem[];
-  has: (productId: string) => boolean;
-  toggle: (productId: string) => void;
-  remove: (productId: string) => void;
+  has: (id: string) => boolean;
+  toggle: (id: string) => void;
+  remove: (id: string) => void;
 }
-
 const WishlistContext = createContext<WishlistContextValue | null>(null);
-
+const KEY = "intellimart.wishlist";
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
-
-  useEffect(() => setItems(readLocal<WishlistItem[]>(KEY, [])), []);
-
-  const persist = useCallback((next: WishlistItem[]) => {
-    setItems(next);
-    writeLocal(KEY, next);
-  }, []);
-
-  const toggle = useCallback(
-    (productId: string) => {
-      const exists = items.some((i) => i.productId === productId);
-      persist(exists ? items.filter((i) => i.productId !== productId) : [...items, { productId, addedAt: new Date().toISOString() }]);
-      toast(exists ? "Removed from wishlist" : "Saved to wishlist");
+  const identity = useRef<string | null>(null);
+  identity.current = user?.id ?? null;
+  const busy = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    let active = true;
+    setItems([]);
+    if (!user) setItems(readLocal<WishlistItem[]>(KEY, []));
+    else
+      void getShoppingState()
+        .then((state) => {
+          if (active) setItems(state?.wishlist ?? []);
+        })
+        .catch(() => toast.error("Could not load wishlist"));
+    return () => {
+      active = false;
+    };
+  }, [user?.id, loading, user]);
+  const change = useCallback(
+    async (id: string, remove: boolean) => {
+      if (busy.current) return;
+      busy.current = true;
+      const owner = identity.current;
+      try {
+        let next: WishlistItem[];
+        if (owner) next = await changeWishlist({ data: { productId: id, remove } });
+        else {
+          next = items.filter((item) => item.productId !== id);
+          if (!remove) next.push({ productId: id, addedAt: new Date().toISOString() });
+          writeLocal(KEY, next);
+        }
+        if (identity.current === owner) setItems(next);
+        toast(remove ? "Removed from wishlist" : "Saved to wishlist");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Wishlist update failed");
+      } finally {
+        busy.current = false;
+      }
     },
-    [items, persist],
+    [items],
   );
-
-  const value = useMemo<WishlistContextValue>(
+  const toggle = useCallback(
+    (id: string) => {
+      void change(
+        id,
+        items.some((item) => item.productId === id),
+      );
+    },
+    [change, items],
+  );
+  const remove = useCallback(
+    (id: string) => {
+      void change(id, true);
+    },
+    [change],
+  );
+  const value = useMemo(
     () => ({
       items,
-      has: (id) => items.some((i) => i.productId === id),
+      has: (id: string) => items.some((item) => item.productId === id),
       toggle,
-      remove: (id) => persist(items.filter((i) => i.productId !== id)),
+      remove,
     }),
-    [items, toggle, persist],
+    [items, toggle, remove],
   );
-
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
-
 export function useWishlist() {
-  const ctx = useContext(WishlistContext);
-  if (!ctx) throw new Error("useWishlist must be used inside WishlistProvider");
-  return ctx;
+  const context = useContext(WishlistContext);
+  if (!context) throw new Error("useWishlist must be used inside WishlistProvider");
+  return context;
 }

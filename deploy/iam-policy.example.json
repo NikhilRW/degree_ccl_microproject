@@ -1,0 +1,75 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ApplicationData",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DescribeTable"
+      ],
+      "Resource": "arn:aws:dynamodb:ap-south-1:ACCOUNT_ID:table/TABLE_NAME"
+    },
+    {
+      "Sid": "ManagedIdentity",
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminListGroupsForUser",
+        "cognito-idp:ListUsers",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:AdminDisableUser",
+        "cognito-idp:AdminUserGlobalSignOut",
+        "cognito-idp:DescribeUserPool",
+        "cognito-idp:DescribeUserPoolClient"
+      ],
+      "Resource": "arn:aws:cognito-idp:ap-south-1:ACCOUNT_ID:userpool/USER_POOL_ID"
+    },
+    {
+      "Sid": "ReadPaymentSecrets",
+      "Effect": "Allow",
+      "Action": ["secretsmanager:GetSecretValue"],
+      "Resource": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:SECRET_NAME-SUFFIX"
+    },
+    {
+      "Sid": "MediaObjects",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": ["arn:aws:s3:::BUCKET_NAME/uploads/pending/*", "arn:aws:s3:::BUCKET_NAME/media/*"]
+    },
+    {
+      "Sid": "BucketHealth",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::BUCKET_NAME"
+    },
+    {
+      "Sid": "VerifiedLabEmail",
+      "Effect": "Allow",
+      "Action": ["ses:SendEmail", "ses:GetEmailIdentity"],
+      "Resource": "arn:aws:ses:ap-south-1:ACCOUNT_ID:identity/SENDER_EMAIL"
+    },
+    {
+      "Sid": "ApplicationLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": "arn:aws:logs:ap-south-1:ACCOUNT_ID:log-group:/intellimart/*:*"
+    },
+    {
+      "Sid": "AgentMetrics",
+      "Effect": "Allow",
+      "Action": ["cloudwatch:PutMetricData"],
+      "Resource": "*",
+      "Condition": { "StringEquals": { "cloudwatch:namespace": "IntelliMart" } }
+    }
+  ]
+}

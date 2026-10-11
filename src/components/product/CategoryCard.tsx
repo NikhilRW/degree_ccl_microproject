@@ -22,7 +22,10 @@ export function CategoryCard({ category }: { category: Category }) {
           <h3 className="text-sm font-semibold">{category.name}</h3>
           <p className="text-xs text-muted-foreground">{category.productCount} products</p>
         </div>
-        <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-smooth group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" aria-hidden />
+        <ArrowUpRight
+          className="h-4 w-4 text-muted-foreground transition-smooth group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+          aria-hidden
+        />
       </div>
     </Link>
   );

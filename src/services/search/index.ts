@@ -7,12 +7,14 @@ export interface SearchService {
 }
 
 /**
- * AWS LEARNING ZONE — Amazon OpenSearch Service (or Kendra)
- * Today search is a client-side filter over the mock catalogue. Later, index
- * products into OpenSearch from a DynamoDB stream and query through Lambda.
+ * Search currently filters the local server-backed demo catalogue.
+ * Planned: bounded/paginated DynamoDB catalogue access through server functions.
+ * OpenSearch is not needed for the initial small lab dataset.
  */
 export const mockSearchService: SearchService = {
-  async search(term) { return productService.list({ search: term }); },
+  async search(term) {
+    return productService.list({ search: term });
+  },
   async suggest(term) {
     const results = await productService.list({ search: term });
     return results.slice(0, 6).map((p) => p.name);
