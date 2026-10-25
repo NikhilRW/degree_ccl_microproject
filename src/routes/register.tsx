@@ -59,6 +59,7 @@ function RegisterPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col px-4 py-20">
+<<<<<<< HEAD
       <h1 className="font-display text-3xl font-semibold">
         {confirming ? "Verify your email" : "Create your account"}
       </h1>
@@ -66,11 +67,18 @@ function RegisterPage() {
         {confirming
           ? `Enter the verification code sent to ${email}.`
           : "Keep your orders, wishlist and favourite finds in one place."}
+=======
+      <h1 className="font-display text-3xl font-semibold">Create your account</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Cloud accounts use Cognito email verification. Demo accounts are simulated and must not use
+        real passwords.
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
       </p>
       <form
         onSubmit={submit}
         className="mt-8 space-y-4 rounded-2xl border border-border bg-card p-6"
       >
+<<<<<<< HEAD
         {!confirming && (
           <>
             <div className="space-y-1.5">
@@ -142,6 +150,35 @@ function RegisterPage() {
             Resend code
           </Button>
         )}
+=======
+        <div className="space-y-1.5">
+          <Label htmlFor="name">Full name</Label>
+          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <Button type="submit" variant="hero" className="w-full" disabled={busy}>
+          {busy ? "Creating…" : "Create account"}
+        </Button>
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link to="/login" className="font-medium text-primary">

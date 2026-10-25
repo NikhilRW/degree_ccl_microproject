@@ -11,6 +11,5 @@ export interface CreateOrderInput {
 export interface OrderService {
   list(): Promise<Order[]>;
   getById(id: string): Promise<Order | null>;
-  create(input: CreateOrderInput): Promise<Order>;
   cancel(id: string): Promise<Order>;
 }

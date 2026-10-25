@@ -1,5 +1,10 @@
 export const currency = (value: number) =>
-  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
 
 export const discountPercent = (price: number, original: number) =>
   original > price ? Math.round(((original - price) / original) * 100) : 0;

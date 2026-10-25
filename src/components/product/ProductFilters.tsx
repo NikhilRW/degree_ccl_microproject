@@ -27,7 +27,13 @@ export function ProductFilters({
   return (
     <div className="space-y-8">
       <fieldset>
+<<<<<<< HEAD
         <legend className="text-base font-medium">Department</legend>
+=======
+        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Category
+        </legend>
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
         <div className="mt-4 space-y-3">
           {categories.map((c) => {
             const checked = state.categories.includes(c.id);
@@ -55,7 +61,13 @@ export function ProductFilters({
       </fieldset>
 
       <fieldset>
+<<<<<<< HEAD
         <legend className="text-base font-medium">Budget</legend>
+=======
+        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Max price
+        </legend>
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
         <div className="mt-5 px-1">
           <Slider
             value={[state.maxPrice]}
@@ -73,7 +85,13 @@ export function ProductFilters({
       </fieldset>
 
       <fieldset>
+<<<<<<< HEAD
         <legend className="text-base font-medium">Rating</legend>
+=======
+        <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Rating
+        </legend>
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
         <div className="mt-4 space-y-3">
           {[0, 4, 4.5].map((r) => (
             <div key={r} className="flex items-center gap-2.5">

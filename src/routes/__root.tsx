@@ -17,7 +17,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { WishlistProvider } from "@/hooks/useWishlist";
 import { Toaster } from "@/components/ui/sonner";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { DemoNotice } from "@/components/layout/DemoNotice";
 
 function NotFoundComponent() {
   return (
@@ -42,10 +42,9 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    console.error("IntelliMart page error", error);
   }, [error]);
 
   return (
@@ -149,6 +148,7 @@ function RootComponent() {
                 Skip to content
               </a>
               <Navbar />
+              <DemoNotice />
               <main id="main" className="flex-1">
                 {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
                 <Outlet />

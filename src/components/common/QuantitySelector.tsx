@@ -13,7 +13,9 @@ export function QuantitySelector({
   className?: string;
 }) {
   return (
-    <div className={cn("inline-flex items-center rounded-lg border border-border bg-card", className)}>
+    <div
+      className={cn("inline-flex items-center rounded-lg border border-border bg-card", className)}
+    >
       <button
         type="button"
         aria-label="Decrease quantity"

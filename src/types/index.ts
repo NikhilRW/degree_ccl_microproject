@@ -36,6 +36,8 @@ export interface Product {
   featured: boolean;
   createdAt: string;
   tags: string[];
+  archived?: boolean;
+  version?: number;
 }
 
 export interface Category {
@@ -45,6 +47,8 @@ export interface Category {
   description: string;
   image: string;
   productCount: number;
+  archived?: boolean;
+  version?: number;
 }
 
 export interface CartItem {
@@ -89,7 +93,7 @@ export interface Payment {
   id: string;
   method: "card" | "upi" | "cod";
   last4?: string | undefined;
-  status: "pending" | "authorized" | "captured" | "failed";
+  status: "pending" | "authorized" | "captured" | "failed" | "refund_pending" | "refunded";
   amount: number;
 }
 
@@ -101,7 +105,7 @@ export interface OrderItem {
   quantity: number;
 }
 
-export type OrderStatus = "processing" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
 export interface Order {
   id: string;
@@ -114,6 +118,13 @@ export interface Order {
   status: OrderStatus;
   createdAt: string;
   estimatedDelivery: string;
+  version?: number;
+  providerOrderId?: string;
+  providerPaymentId?: string;
+  reservationExpiresAt?: number;
+  inventoryReleased?: boolean;
+  customerEmail?: string;
+  notificationStatus?: "pending" | "sent" | "failed";
 }
 
 export interface User {
@@ -123,6 +134,8 @@ export interface User {
   avatarUrl?: string | undefined;
   createdAt?: string;
   addresses: Address[];
+  isAdmin?: boolean;
+  disabled?: boolean;
 }
 
 export interface AdminOrderSummary {
@@ -136,6 +149,12 @@ export interface AdminOrderSummary {
 }
 
 export interface Session {
+<<<<<<< HEAD
+=======
+  // Real identity/provider tokens never leave the server. Kept optional for
+  // compatibility with old demo data; cloud sessions use an HttpOnly cookie.
+  accessToken?: string;
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   expiresAt: number;
   user: User;
 }
@@ -148,3 +167,20 @@ export interface ProductQuery {
   minRating?: number;
   sort?: "featured" | "price-asc" | "price-desc" | "rating" | "newest";
 }
+<<<<<<< HEAD
+=======
+
+export type ServiceStatus = "frontend-ready" | "integration-pending" | "code-ready" | "implemented";
+
+export interface AwsServiceEntry {
+  id: string;
+  name: string;
+  category: string;
+  purpose: string;
+  status: ServiceStatus;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  location: string;
+  tasks: string[];
+  docsUrl: string;
+}
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094

@@ -33,10 +33,7 @@ function ConfirmationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    orderService
-      .getById(id)
-      .then(setOrder)
-      .finally(() => setLoading(false));
+    orderService.getById(id).then(setOrder).finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <LoadingState label="Fetching your order" />;
@@ -59,10 +56,15 @@ function ConfirmationPage() {
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <div className="animate-rise text-center">
         <CheckCircle2 className="mx-auto h-14 w-14 text-success" aria-hidden />
-        <h1 className="mt-5 font-display text-3xl font-semibold sm:text-4xl">Order Confirmed!</h1>
+        <h1 className="mt-5 font-display text-3xl font-semibold sm:text-4xl">
+          {order.status === "pending"
+            ? "Order pending payment"
+            : order.status === "cancelled"
+              ? "Order cancelled"
+              : "Order received"}
+        </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Thanks {order.address.fullName.split(" ")[0]} — your order details are below. Pay on
-          delivery.
+          Thanks {order.address.fullName.split(" ")[0]} — we've sent a confirmation to your inbox.
         </p>
       </div>
 
@@ -97,7 +99,7 @@ function ConfirmationPage() {
         </ul>
 
         <div className="mt-4 flex justify-between border-t border-border pt-4 text-base font-semibold">
-          <span>Order total</span>
+          <span>Total paid</span>
           <span className="tabular-nums">{currency(order.totals.total)}</span>
         </div>
 
@@ -111,6 +113,13 @@ function ConfirmationPage() {
           </p>
         </div>
       </div>
+
+      <AwsIntegrationPlaceholder
+        className="mt-8"
+        service="Amazon SES + EventBridge + SQS"
+        objective="Emit OrderCreated, queue it, and send the confirmation email from Lambda."
+        location="src/services/notifications/index.ts"
+      />
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild variant="hero">

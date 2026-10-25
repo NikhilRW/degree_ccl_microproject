@@ -2,7 +2,17 @@ import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+<<<<<<< HEAD
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/states";
+=======
+import { EmptyState } from "@/components/common/states";
+import { ProfileEditor } from "@/components/account/ProfileEditor";
+import { ReviewForm } from "@/components/account/ReviewForm";
+import { reconcileMyOrder } from "@/server/orders.functions";
+import { toast } from "sonner";
+import { payExistingOrder } from "@/services/payments/checkout";
+import { useCart } from "@/hooks/useCart";
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { orderService, productService } from "@/services";
@@ -26,6 +36,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
+<<<<<<< HEAD
   const { hash } = useLocation();
   const [tab, setTab] = useState(hash === "wishlist" ? "wishlist" : "orders");
   const { user, loading: authLoading, signOut } = useAuth();
@@ -89,6 +100,43 @@ function AccountPage() {
   }, [wishlist, user?.id, user]);
 
   if (authLoading) return <LoadingState label="Loading your account" />;
+=======
+  const { user, signOut } = useAuth();
+  const { refresh: refreshCart } = useCart();
+  const { items: wishlist, remove } = useWishlist();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [paying, setPaying] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setOrders([]);
+    if (user)
+      orderService
+        .list(user.id)
+        .then((value) => {
+          if (active) setOrders(value);
+        })
+        .catch((error: Error) => toast.error(error.message));
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  useEffect(() => {
+    let active = true;
+    productService
+      .list()
+      .then((items) => {
+        if (active) setProducts(items);
+      })
+      .catch(console.error);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20">
@@ -127,11 +175,15 @@ function AccountPage() {
         </TabsList>
 
         <TabsContent value="orders" id="orders" className="mt-6 space-y-4">
+<<<<<<< HEAD
           {ordersLoading ? (
             <LoadingState label="Loading orders" />
           ) : ordersError ? (
             <ErrorState message={ordersError} />
           ) : orders.length === 0 ? (
+=======
+          {orders.length === 0 ? (
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
             <EmptyState
               title="No orders yet"
               description="Your completed orders will appear here."
@@ -148,7 +200,11 @@ function AccountPage() {
                   <div>
                     <h2 className="font-semibold">{o.id}</h2>
                     <p className="text-xs text-muted-foreground">
+<<<<<<< HEAD
                       Placed {formatDate(o.createdAt)} · {o.status}
+=======
+                      Placed {formatDate(o.createdAt)} · {o.status} · Payment: {o.payment.status}
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
                     </p>
                   </div>
                   <span className="text-sm font-semibold tabular-nums">
@@ -165,20 +221,92 @@ function AccountPage() {
                       <span className="text-xs">
                         {i.name} × {i.quantity}
                       </span>
+<<<<<<< HEAD
+=======
+                      {o.status === "delivered" && <ReviewForm productId={i.productId} />}
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
                     </li>
                   ))}
                 </ul>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {o.status === "pending" && (
+                    <Button
+                      size="sm"
+                      disabled={!!paying}
+                      onClick={() => {
+                        setPaying(o.id);
+                        void payExistingOrder(o.id)
+                          .then(async (value) => {
+                            setOrders((current) =>
+                              current.map((item) => (item.id === value.id ? value : item)),
+                            );
+                            await refreshCart().catch(() =>
+                              toast.error("Payment confirmed; reload to refresh the cart."),
+                            );
+                          })
+                          .catch((error: Error) => toast.error(error.message))
+                          .finally(() => setPaying(null));
+                      }}
+                    >
+                      {paying === o.id ? "Opening checkout…" : "Resume test payment"}
+                    </Button>
+                  )}
+                  {["pending", "processing"].includes(o.status) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (window.confirm(`Cancel ${o.id}? Paid test orders will be refunded.`))
+                          void orderService.cancel(o.id).then(
+                            (value) =>
+                              setOrders((current) =>
+                                current.map((item) => (item.id === value.id ? value : item)),
+                              ),
+                            (error: Error) => toast.error(error.message),
+                          );
+                      }}
+                    >
+                      Cancel order
+                    </Button>
+                  )}
+                  {(o.status === "pending" || o.payment.status === "refund_pending") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        void reconcileMyOrder({ data: o.id }).then(
+                          (value) =>
+                            setOrders((current) =>
+                              current.map((item) => (item.id === value.id ? value : item)),
+                            ),
+                          (error: Error) => toast.error(error.message),
+                        );
+                      }}
+                    >
+                      Verify / reconcile payment
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to="/order-confirmation" search={{ id: o.id }}>
+                      Order details
+                    </Link>
+                  </Button>
+                </div>
               </article>
             ))
           )}
         </TabsContent>
 
         <TabsContent value="wishlist" className="mt-6">
+<<<<<<< HEAD
           {wishlistLoading ? (
             <LoadingState label="Loading wishlist" />
           ) : wishlistError ? (
             <ErrorState message={wishlistError} />
           ) : wishlistProducts.length === 0 ? (
+=======
+          {wishlistProducts.length === 0 ? (
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
             <EmptyState
               title="Your wishlist is empty"
               description="Tap the heart on any product to save it."
@@ -191,7 +319,14 @@ function AccountPage() {
           ) : (
             <ul className="grid gap-4 sm:grid-cols-2">
               {wishlistProducts.map((p) => (
+<<<<<<< HEAD
                 <li key={p.id} className="flex items-center gap-4 bg-surface p-5">
+=======
+                <li
+                  key={p.id}
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"
+                >
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
                   <img src={p.images[0]} alt="" className="h-16 w-16 rounded-xl object-cover" />
                   <div className="flex-1">
                     <Link
@@ -215,6 +350,7 @@ function AccountPage() {
         </TabsContent>
 
         <TabsContent value="profile" className="mt-6 space-y-6">
+<<<<<<< HEAD
           <dl className="grid gap-5 bg-surface p-6 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-muted-foreground">Name</dt>
@@ -225,6 +361,23 @@ function AccountPage() {
               <dd className="mt-2 text-base">{user.email}</dd>
             </div>
           </dl>
+=======
+          <dl className="grid gap-5 rounded-2xl border border-border bg-card p-6 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Name
+              </dt>
+              <dd className="mt-1 text-sm">{user.name}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Email
+              </dt>
+              <dd className="mt-1 text-sm">{user.email}</dd>
+            </div>
+          </dl>
+          <ProfileEditor key={user.id} />
+>>>>>>> 9b6cd397646ca9c6897976644249620454a40094
         </TabsContent>
       </Tabs>
     </div>
