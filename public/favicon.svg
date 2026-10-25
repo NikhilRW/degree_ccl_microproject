@@ -1,11 +1,5 @@
-<<<<<<< HEAD
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
   <rect width="48" height="48" fill="#171715"/>
   <path fill="#fafaf9" d="M20 18h8v22h-8z"/>
   <circle cx="24" cy="10" r="4" fill="#fafaf9"/>
-=======
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#155e75" />
-  <path d="M18 24h28l-3 25H21l-3-25zm8 0v-5a6 6 0 0 1 12 0v5" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round" />
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
 </svg>

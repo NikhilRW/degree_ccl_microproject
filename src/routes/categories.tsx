@@ -28,14 +28,10 @@ function CategoriesPage() {
     productService
       .getCategories()
       .then(setCategories)
-<<<<<<< HEAD
       .catch((error: unknown) => {
         setError(error instanceof Error ? error.message : "Could not load departments.");
         setCategories([]);
       });
-=======
-      .catch(() => setCategories([]));
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   }, []);
 
   return (

@@ -81,12 +81,8 @@
     "tailwindcss": "^4.2.1",
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
-<<<<<<< HEAD
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^4.6.7"
-=======
-    "zod": "^3.24.2"
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

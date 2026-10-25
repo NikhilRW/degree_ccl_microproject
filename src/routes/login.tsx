@@ -5,12 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-<<<<<<< HEAD
 import { authService } from "@/services";
 import { ServiceError } from "@/services/rpc";
-=======
-import { getRuntimeInfo } from "@/server/runtime.functions";
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: "/admin" } =>
@@ -34,14 +30,8 @@ function LoginPage() {
   const { redirect } = Route.useSearch();
   const { signIn } = useAuth();
   const navigate = useNavigate();
-<<<<<<< HEAD
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-=======
-  const runtime = Route.useLoaderData();
-  const [email, setEmail] = useState(runtime.mode === "demo" ? "demo@intellimart.dev" : "");
-  const [password, setPassword] = useState(runtime.mode === "demo" ? "demo1234" : "");
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [code, setCode] = useState("");
@@ -74,13 +64,7 @@ function LoginPage() {
     <div className="mx-auto flex max-w-md flex-col px-4 py-20">
       <h1 className="font-display text-3xl font-semibold">Welcome back</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-<<<<<<< HEAD
         Sign in to view your orders and revisit your favourite finds.
-=======
-        {runtime.mode === "demo"
-          ? "Demo mode accepts any valid email and a nonempty password. Use synthetic data only."
-          : "Sign in with your verified Cognito account. Your session is kept in a secure server-managed cookie."}
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
       </p>
       <form
         onSubmit={submit}
@@ -109,7 +93,6 @@ function LoginPage() {
             required
           />
         </div>
-<<<<<<< HEAD
         {confirming && (
           <div className="space-y-1.5">
             <Label htmlFor="verify-code">Email verification code</Label>
@@ -128,10 +111,6 @@ function LoginPage() {
         )}
         <Button type="submit" variant="hero" className="w-full" disabled={busy}>
           {busy ? "Signing in…" : confirming ? "Verify and sign in" : "Sign in"}
-=======
-        <Button type="submit" variant="hero" className="w-full" disabled={busy}>
-          {busy ? "Signing in…" : "Sign in"}
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
         </Button>
         <div className="flex justify-between text-sm">
           <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground">

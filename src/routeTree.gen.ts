@@ -13,10 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AdminRouteImport } from './routes/admin'
-<<<<<<< HEAD
-=======
-import { Route as AwsLearningRouteImport } from './routes/aws-learning'
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -50,14 +46,6 @@ const AccountRoute = AccountRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-<<<<<<< HEAD
-=======
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AwsLearningRoute = AwsLearningRouteImport.update({
-  id: '/aws-learning',
-  path: '/aws-learning',
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -136,10 +124,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRoute
-<<<<<<< HEAD
-=======
-  '/aws-learning': typeof AwsLearningRoute
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
@@ -160,10 +144,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRoute
-<<<<<<< HEAD
-=======
-  '/aws-learning': typeof AwsLearningRoute
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
@@ -185,10 +165,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRoute
-<<<<<<< HEAD
-=======
-  '/aws-learning': typeof AwsLearningRoute
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
@@ -211,10 +187,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/account'
     | '/admin'
-<<<<<<< HEAD
-=======
-    | '/aws-learning'
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
     | '/cart'
     | '/categories'
     | '/checkout'
@@ -235,10 +207,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/account'
     | '/admin'
-<<<<<<< HEAD
-=======
-    | '/aws-learning'
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
     | '/cart'
     | '/categories'
     | '/checkout'
@@ -259,10 +227,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/account'
     | '/admin'
-<<<<<<< HEAD
-=======
-    | '/aws-learning'
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
     | '/cart'
     | '/categories'
     | '/checkout'
@@ -284,10 +248,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
   AdminRoute: typeof AdminRoute
-<<<<<<< HEAD
-=======
-  AwsLearningRoute: typeof AwsLearningRoute
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -332,16 +292,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-<<<<<<< HEAD
-=======
-      parentRoute: typeof rootRouteImport
-    }
-    '/aws-learning': {
-      id: '/aws-learning'
-      path: '/aws-learning'
-      fullPath: '/aws-learning'
-      preLoaderRoute: typeof AwsLearningRouteImport
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -450,10 +400,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
   AdminRoute: AdminRoute,
-<<<<<<< HEAD
-=======
-  AwsLearningRoute: AwsLearningRoute,
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
   CheckoutRoute: CheckoutRoute,

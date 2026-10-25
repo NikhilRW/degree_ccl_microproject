@@ -149,12 +149,6 @@ export interface AdminOrderSummary {
 }
 
 export interface Session {
-<<<<<<< HEAD
-=======
-  // Real identity/provider tokens never leave the server. Kept optional for
-  // compatibility with old demo data; cloud sessions use an HttpOnly cookie.
-  accessToken?: string;
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
   expiresAt: number;
   user: User;
 }
@@ -167,20 +161,3 @@ export interface ProductQuery {
   minRating?: number;
   sort?: "featured" | "price-asc" | "price-desc" | "rating" | "newest";
 }
-<<<<<<< HEAD
-=======
-
-export type ServiceStatus = "frontend-ready" | "integration-pending" | "code-ready" | "implemented";
-
-export interface AwsServiceEntry {
-  id: string;
-  name: string;
-  category: string;
-  purpose: string;
-  status: ServiceStatus;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  location: string;
-  tasks: string[];
-  docsUrl: string;
-}
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094

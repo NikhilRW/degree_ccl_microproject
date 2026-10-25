@@ -1,10 +1,5 @@
 import { renderErrorPage } from "./lib/error-page";
-<<<<<<< HEAD
 import { staticAsset } from "./server/assets.server";
-=======
-import { getRuntimeConfig } from "./server/runtime.server";
-import { ensureMaintenanceTimer } from "./server/maintenance.server";
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -50,13 +45,8 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-<<<<<<< HEAD
       const asset = await staticAsset(request);
       if (asset) return asset;
-=======
-      getRuntimeConfig();
-      ensureMaintenanceTimer();
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

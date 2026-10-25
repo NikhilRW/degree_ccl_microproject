@@ -42,17 +42,12 @@ export function ProductCard({ product, className }: { product: Product; classNam
           className="save-product"
         >
           <Heart
-<<<<<<< HEAD
             className={cn("h-[18px] w-[18px]", saved && "fill-current")}
             strokeWidth={1.5}
-=======
-            className={cn("h-4 w-4", saved && "fill-destructive text-destructive")}
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
             aria-hidden
           />
         </button>
       </div>
-<<<<<<< HEAD
       <div className="product-info">
         <p className="product-category">{product.category}</p>
         <h3>
@@ -76,41 +71,6 @@ export function ProductCard({ product, className }: { product: Product; classNam
             {outOfStock ? "Sold out" : adding ? "Adding…" : "Add to bag"}
           </button>
         </div>
-=======
-
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          {product.category}
-        </p>
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
-          <Link
-            to="/product/$id"
-            params={{ id: product.id }}
-            className="transition-smooth hover:text-primary"
-          >
-            {product.name}
-          </Link>
-        </h3>
-        <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
-        <PriceDisplay price={product.price} originalPrice={product.originalPrice} />
-        <p
-          className={cn(
-            "text-xs font-medium",
-            outOfStock ? "text-destructive" : product.stock <= 10 ? "text-warning" : "text-success",
-          )}
-        >
-          {stockLabel(product.stock)}
-        </p>
-        <Button
-          className="mt-auto w-full"
-          size="sm"
-          disabled={outOfStock}
-          onClick={() => void add(product.id)}
-        >
-          <ShoppingBag aria-hidden />
-          {outOfStock ? "Out of stock" : "Add to cart"}
-        </Button>
->>>>>>> 9b6cd397646ca9c6897976644249620454a40094
       </div>
     </article>
   );
