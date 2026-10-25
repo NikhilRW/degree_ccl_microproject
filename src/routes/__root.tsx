@@ -84,33 +84,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "IntelliMart — Shop Smart. Learn AWS." },
+      { title: "IntelliMart — Smarter Finds for Everyday Life" },
       {
         name: "description",
         content:
-          "IntelliMart is a modern marketplace for electronics, computing and smart devices, built as a hands-on AWS cloud engineering project.",
+          "Discover electronics, computing gear and smart devices at IntelliMart. Browse categories, explore deals and find your next everyday upgrade.",
       },
       { name: "author", content: "IntelliMart" },
-      { property: "og:title", content: "IntelliMart — Shop Smart. Learn AWS." },
+      { property: "og:title", content: "IntelliMart — Smarter Finds for Everyday Life" },
       {
         property: "og:description",
-        content: "Quality products, real deals, and an architecture built to grow into the cloud.",
+        content: "Electronics, computing gear and smart devices for work, play and everyday life.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap",
       },
     ],
   }),

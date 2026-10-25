@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SearchBar } from "./SearchBar";
@@ -8,136 +8,130 @@ import { Logo } from "./Logo";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
-import { cn } from "@/lib/utils";
 
 const links = [
-  { to: "/", label: "Home" },
-  { to: "/shop", label: "Shop" },
-  { to: "/categories", label: "Categories" },
-  { to: "/deals", label: "Deals" },
-  { to: "/about", label: "About" },
+  { to: "/shop", label: "Shop all" },
+  { to: "/categories", label: "Departments" },
+  { to: "/deals", label: "The good deals" },
+  { to: "/about", label: "Our store" },
 ] as const;
 
 export function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const { count, setDrawerOpen } = useCart();
   const { user } = useAuth();
   const wishlist = useWishlist();
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full border-b transition-smooth",
-        scrolled ? "border-border bg-background/85 shadow-soft backdrop-blur-xl" : "border-transparent bg-background",
-      )}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <header className="site-header">
+      <div className="site-container nav-main">
         <Logo />
-
-        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
-          {links.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              activeOptions={{ exact: l.to === "/" }}
-              activeProps={{ className: "text-foreground bg-surface" }}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-smooth hover:bg-surface hover:text-foreground"
-            >
-              {l.label}
+        <nav aria-label="Main" className="nav-links">
+          {links.map((link) => (
+            <Link key={link.to} to={link.to} className="nav-link">
+              {link.label}
             </Link>
           ))}
         </nav>
-
-        <div className="ml-auto hidden max-w-xs flex-1 md:block">
+        <div className="nav-search">
           <SearchBar />
         </div>
-
-        <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <div className="nav-actions">
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
-            aria-label="Search"
-            onClick={() => setMobileSearch((v) => !v)}
+            className="sm:hidden"
+            aria-label="Search products"
+            aria-expanded={mobileSearch}
+            aria-controls="mobile-search"
+            onClick={() => setMobileSearch(!mobileSearch)}
           >
-            <Search aria-hidden />
+            <Search strokeWidth={1.5} aria-hidden />
           </Button>
-
-          <Button asChild variant="ghost" size="icon" className="hidden sm:inline-flex" aria-label="Account">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="hidden sm:inline-flex"
+            aria-label="My account"
+          >
             <Link to={user ? "/account" : "/login"}>
-              <User aria-hidden />
+              <User strokeWidth={1.5} aria-hidden />
             </Link>
           </Button>
-
-          <Button asChild variant="ghost" size="icon" className="relative hidden sm:inline-flex" aria-label="Wishlist">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="hidden sm:inline-flex"
+            aria-label={`Wishlist, ${wishlist.items.length} saved products`}
+          >
             <Link to="/account" hash="wishlist">
-              <Heart aria-hidden />
-              {wishlist.items.length > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight px-1 text-[10px] font-bold text-highlight-foreground">
-                  {wishlist.items.length}
-                </span>
-              )}
+              <Heart strokeWidth={1.5} aria-hidden />
             </Link>
           </Button>
-
-          <Button variant="ghost" size="icon" className="relative" aria-label={`Cart, ${count} items`} onClick={() => setDrawerOpen(true)}>
-            <ShoppingBag aria-hidden />
-            {count > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                {count}
-              </span>
-            )}
+          <Button
+            variant="ghost"
+            className="gap-2 px-2"
+            aria-label={`Open shopping bag, ${count} items`}
+            onClick={() => setDrawerOpen(true)}
+          >
+            <ShoppingBag strokeWidth={1.5} aria-hidden />
+            <span className="cart-counter">({count})</span>
           </Button>
-
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
-                <Menu aria-hidden />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="min-[1100px]:hidden"
+                aria-label="Open menu"
+              >
+                <Menu strokeWidth={1.5} aria-hidden />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
+            <SheetContent side="right" className="w-80 max-w-[90vw]">
               <SheetHeader>
-                <SheetTitle className="font-display">Menu</SheetTitle>
+                <SheetTitle>Explore IntelliMart</SheetTitle>
               </SheetHeader>
-              <nav aria-label="Mobile" className="flex flex-col gap-1 px-4">
-                {links.map((l) => (
+              <nav aria-label="Mobile" className="flex flex-col gap-2 px-6 pb-8">
+                {links.map((link) => (
                   <Link
-                    key={l.to}
-                    to={l.to}
+                    key={link.to}
+                    to={link.to}
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-smooth hover:bg-surface hover:text-foreground"
+                    className="py-3 text-xl tracking-tight hover:underline"
                   >
-                    {l.label}
+                    {link.label}
                   </Link>
                 ))}
-                <div className="my-2 h-px bg-border" />
-                <Link to={user ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-surface">
+                <Link
+                  to={user ? "/account" : "/login"}
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-6 py-3 text-base"
+                >
                   {user ? "My account" : "Sign in"}
                 </Link>
-                <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-surface">
-                  Cart ({count})
+                <Link
+                  to="/account"
+                  hash="wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="py-3 text-base"
+                >
+                  Wishlist ({wishlist.items.length})
                 </Link>
-                <Link to="/aws-learning" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium text-primary hover:bg-surface">
-                  AWS Implementation Lab
+                <Link to="/cart" onClick={() => setMobileOpen(false)} className="py-3 text-base">
+                  Shopping bag ({count})
                 </Link>
               </nav>
             </SheetContent>
           </Sheet>
         </div>
       </div>
-
       {mobileSearch && (
-        <div className="border-t border-border bg-background px-4 py-3 md:hidden">
-          <SearchBar />
+        <div id="mobile-search" className="site-container pb-5 sm:hidden">
+          <SearchBar autoFocus />
         </div>
       )}
     </header>

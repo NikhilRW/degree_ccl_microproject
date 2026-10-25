@@ -23,7 +23,7 @@ export function ProductGrid({
   if (!products.length) return <EmptyState title={emptyTitle} description={emptyDescription} />;
 
   return (
-    <div className={cn("grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", className)}>
+    <div className={cn("product-grid", className)}>
       {products.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}

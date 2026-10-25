@@ -1,2 +1,2 @@
 export * from "./types";
-export { authService, mockAuthService } from "./mockAuthService";
+export { authService } from "./awsAuthService";

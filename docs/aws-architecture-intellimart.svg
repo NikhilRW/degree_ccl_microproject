@@ -1,0 +1,179 @@
+<svg width="1400" height="860" viewBox="0 0 1400 860" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">IntelliMart TanStack Start AWS Architecture</title>
+  <desc id="desc">Architecture diagram for the IntelliMart TanStack Start app using CloudFront, Amplify Hosting, Lambda server functions, DynamoDB, Cognito, S3, SES, Secrets Manager, and CloudWatch.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 14 7 L 0 14 z" fill="#111827" />
+    </marker>
+    <style>
+      .bg { fill: #ffffff; }
+      .border { fill: none; stroke: #111827; stroke-width: 3; }
+      .dash { fill: #fffaf0; stroke: #111827; stroke-width: 3; stroke-dasharray: 12 8; }
+      .line { stroke: #111827; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .thin-line { stroke: #111827; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .number { fill: #ffffff; stroke: #6b7280; stroke-width: 3; }
+      .num-text { font: 700 24px Arial, sans-serif; fill: #374151; text-anchor: middle; dominant-baseline: middle; }
+      .title { font: 800 30px Arial, sans-serif; fill: #111827; text-anchor: middle; }
+      .subtitle { font: 500 20px Arial, sans-serif; fill: #4b5563; text-anchor: middle; }
+      .small { font: 500 18px Arial, sans-serif; fill: #4b5563; text-anchor: middle; }
+      .tiny { font: 500 15px Arial, sans-serif; fill: #4b5563; text-anchor: middle; }
+      .label { font: 800 22px Arial, sans-serif; fill: #111827; text-anchor: middle; }
+      .box-title { font: 800 22px Arial, sans-serif; fill: #111827; text-anchor: middle; }
+      .box-sub { font: 500 16px Arial, sans-serif; fill: #4b5563; text-anchor: middle; }
+      .orange { fill: #ff9900; }
+      .purple { fill: #7c3aed; }
+      .blue { fill: #38bdf8; }
+      .red { fill: #f97316; }
+      .green { fill: #10b981; }
+      .gray { fill: #64748b; }
+      .yellow { fill: #facc15; }
+    </style>
+  </defs>
+
+  <rect x="10" y="10" width="1380" height="840" class="bg border" />
+  <text x="700" y="52" class="title">IntelliMart - TanStack Start App on AWS</text>
+  <text x="700" y="82" class="subtitle">React storefront + TanStack server functions + AWS managed services</text>
+
+  <!-- Step 1: User -->
+  <circle cx="82" cy="84" r="31" class="number" />
+  <text x="82" y="84" class="num-text">1</text>
+  <circle cx="170" cy="130" r="65" fill="#0ea5e9" />
+  <circle cx="170" cy="98" r="25" fill="#bae6fd" opacity="0.95" />
+  <path d="M117 176 C132 138 208 138 223 176 C210 206 130 206 117 176Z" fill="#0369a1" />
+  <text x="170" y="225" class="label">User Input</text>
+  <text x="170" y="252" class="small">Shop, login, cart, checkout</text>
+
+  <!-- Step 2: CloudFront / Amplify -->
+  <line x1="260" y1="130" x2="390" y2="130" class="line" />
+  <circle cx="405" cy="84" r="31" class="number" />
+  <text x="405" y="84" class="num-text">2</text>
+  <rect x="430" y="65" width="135" height="130" rx="16" fill="#fff7ed" stroke="#fb923c" stroke-width="3" />
+  <path d="M465 163 L503 82 L545 163 Z" class="orange" />
+  <path d="M489 163 L514 110 L541 163 Z" fill="#ffffff" />
+  <text x="498" y="225" class="label">CloudFront + Amplify</text>
+  <text x="498" y="252" class="small">Deploy and deliver app</text>
+
+  <!-- Step 3: Lambda runtime -->
+  <line x1="580" y1="130" x2="710" y2="130" class="line" />
+  <circle cx="725" cy="84" r="31" class="number" />
+  <text x="725" y="84" class="num-text">3</text>
+  <rect x="750" y="65" width="135" height="130" rx="16" fill="#fff7ed" stroke="#f97316" stroke-width="3" />
+  <path d="M805 90 L832 90 L805 135 L832 135 L785 183 L804 145 L780 145 Z" class="red" />
+  <text x="818" y="225" class="label">AWS Lambda</text>
+  <text x="818" y="252" class="small">TanStack Start runtime</text>
+
+  <!-- Step 4: Server functions -->
+  <line x1="900" y1="130" x2="1030" y2="130" class="line" />
+  <circle cx="1045" cy="84" r="31" class="number" />
+  <text x="1045" y="84" class="num-text">4</text>
+  <rect x="1070" y="65" width="185" height="130" rx="16" fill="#f5f3ff" stroke="#7c3aed" stroke-width="3" />
+  <path d="M1112 98 L1095 130 L1112 162" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M1213 98 L1230 130 L1213 162" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="1162" y="119" class="box-title">Server</text>
+  <text x="1162" y="147" class="box-title">Functions</text>
+  <text x="1162" y="225" class="label">TanStack Backend</text>
+  <text x="1162" y="252" class="small">No separate REST API needed</text>
+
+  <!-- Down arrow into service layer -->
+  <path d="M1162 202 C1162 274 1090 286 1025 286 L760 286 C704 286 690 310 690 350" class="line" />
+
+  <!-- Server function boundary -->
+  <rect x="72" y="340" width="1080" height="405" rx="32" class="dash" />
+  <circle cx="145" cy="372" r="31" class="number" />
+  <text x="145" y="372" class="num-text">5</text>
+  <text x="615" y="382" class="title">IntelliMart Server Function Layer</text>
+  <text x="615" y="412" class="subtitle">Replaces current mock/localStorage services in src/services</text>
+
+  <!-- Function blocks -->
+  <rect x="120" y="470" width="160" height="130" rx="20" fill="#eef2ff" stroke="#6366f1" stroke-width="3" />
+  <circle cx="200" cy="517" r="31" class="purple" />
+  <path d="M184 518 L195 530 L218 500" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="200" y="635" class="box-title">Auth Fn</text>
+  <text x="200" y="660" class="box-sub">login/register/session</text>
+
+  <rect x="325" y="470" width="160" height="130" rx="20" fill="#ecfeff" stroke="#06b6d4" stroke-width="3" />
+  <circle cx="405" cy="517" r="31" class="blue" />
+  <path d="M383 505 H427 M383 520 H427 M383 535 H412" stroke="#ffffff" stroke-width="7" stroke-linecap="round" />
+  <text x="405" y="635" class="box-title">Product Fn</text>
+  <text x="405" y="660" class="box-sub">catalogue, filters</text>
+
+  <rect x="530" y="470" width="160" height="130" rx="20" fill="#f0fdf4" stroke="#22c55e" stroke-width="3" />
+  <circle cx="610" cy="517" r="31" class="green" />
+  <path d="M588 506 H630 L621 536 H595 Z" fill="none" stroke="#ffffff" stroke-width="7" stroke-linejoin="round" />
+  <text x="610" y="635" class="box-title">Cart Fn</text>
+  <text x="610" y="660" class="box-sub">cart and wishlist</text>
+
+  <rect x="735" y="470" width="160" height="130" rx="20" fill="#fff7ed" stroke="#fb923c" stroke-width="3" />
+  <circle cx="815" cy="517" r="31" class="orange" />
+  <path d="M795 499 H832 V537 H795 Z M802 511 H825" fill="none" stroke="#ffffff" stroke-width="7" stroke-linejoin="round" />
+  <text x="815" y="635" class="box-title">Order Fn</text>
+  <text x="815" y="660" class="box-sub">checkout and orders</text>
+
+  <rect x="940" y="470" width="160" height="130" rx="20" fill="#fef2f2" stroke="#ef4444" stroke-width="3" />
+  <circle cx="1020" cy="517" r="31" class="red" />
+  <path d="M998 520 C1010 494 1030 494 1042 520 C1032 544 1008 544 998 520Z" fill="#ffffff" />
+  <text x="1020" y="635" class="box-title">Notify Fn</text>
+  <text x="1020" y="660" class="box-sub">emails and events</text>
+
+  <!-- Service dependencies below -->
+  <line x1="200" y1="470" x2="200" y2="440" class="thin-line" />
+  <line x1="405" y1="470" x2="405" y2="440" class="thin-line" />
+  <line x1="610" y1="470" x2="610" y2="440" class="thin-line" />
+  <line x1="815" y1="470" x2="815" y2="440" class="thin-line" />
+  <line x1="1020" y1="470" x2="1020" y2="440" class="thin-line" />
+
+  <!-- AWS services on right/bottom -->
+  <circle cx="1198" cy="357" r="31" class="number" />
+  <text x="1198" y="357" class="num-text">6</text>
+  <rect x="1198" y="390" width="150" height="115" rx="16" fill="#fef3c7" stroke="#f59e0b" stroke-width="3" />
+  <rect x="1240" y="410" width="66" height="65" rx="8" class="yellow" />
+  <path d="M1240 432 H1306 M1240 454 H1306 M1262 410 V475 M1284 410 V475" stroke="#ffffff" stroke-width="5" />
+  <text x="1273" y="535" class="label">DynamoDB</text>
+  <text x="1273" y="562" class="small">Products, carts, orders</text>
+
+  <line x1="405" y1="600" x2="1190" y2="445" class="thin-line" />
+  <line x1="610" y1="600" x2="1190" y2="456" class="thin-line" />
+  <line x1="815" y1="600" x2="1190" y2="466" class="thin-line" />
+
+  <rect x="120" y="700" width="170" height="90" rx="16" fill="#eef2ff" stroke="#6366f1" stroke-width="3" />
+  <text x="205" y="735" class="box-title">Cognito</text>
+  <text x="205" y="762" class="box-sub">User auth</text>
+  <line x1="200" y1="600" x2="205" y2="690" class="thin-line" />
+
+  <rect x="340" y="700" width="170" height="90" rx="16" fill="#eff6ff" stroke="#3b82f6" stroke-width="3" />
+  <text x="425" y="735" class="box-title">S3</text>
+  <text x="425" y="762" class="box-sub">Images and assets</text>
+
+  <rect x="560" y="700" width="170" height="90" rx="16" fill="#fef2f2" stroke="#ef4444" stroke-width="3" />
+  <text x="645" y="735" class="box-title">SES</text>
+  <text x="645" y="762" class="box-sub">Order emails</text>
+  <line x1="1020" y1="600" x2="645" y2="690" class="thin-line" />
+
+  <rect x="780" y="700" width="170" height="90" rx="16" fill="#f8fafc" stroke="#64748b" stroke-width="3" />
+  <text x="865" y="735" class="box-title">Secrets Manager</text>
+  <text x="865" y="762" class="box-sub">Payment keys</text>
+  <line x1="815" y1="600" x2="865" y2="690" class="thin-line" />
+
+  <rect x="1000" y="700" width="170" height="90" rx="16" fill="#f1f5f9" stroke="#475569" stroke-width="3" />
+  <text x="1085" y="735" class="box-title">CloudWatch</text>
+  <text x="1085" y="762" class="box-sub">Logs and metrics</text>
+  <path d="M1162 195 C1280 245 1320 560 1100 690" class="thin-line" />
+
+  <!-- Website delivered -->
+  <circle cx="1235" cy="624" r="31" class="number" />
+  <text x="1235" y="624" class="num-text">7</text>
+  <rect x="1190" y="650" width="155" height="95" rx="14" fill="#e0f2fe" stroke="#0284c7" stroke-width="3" />
+  <rect x="1208" y="668" width="119" height="58" fill="#ffffff" stroke="#0284c7" stroke-width="3" />
+  <rect x="1208" y="668" width="119" height="18" fill="#ef4444" />
+  <text x="1268" y="682" font="800 14px Arial, sans-serif" fill="#ffffff" text-anchor="middle">www</text>
+  <rect x="1222" y="698" width="34" height="18" fill="#38bdf8" />
+  <rect x="1265" y="698" width="48" height="6" fill="#94a3b8" />
+  <rect x="1265" y="711" width="48" height="6" fill="#cbd5e1" />
+  <text x="1268" y="780" class="label">Website Delivered</text>
+  <text x="1268" y="807" class="small">SSR pages + interactive shop</text>
+  <path d="M498 195 C720 322 1110 295 1245 640" class="thin-line" />
+
+  <!-- Footer note -->
+  <text x="700" y="832" class="tiny">Core free-tier-friendly stack: CloudFront, Amplify/S3, Lambda, DynamoDB, Cognito, SES, CloudWatch, ACM, IAM</text>
+</svg>

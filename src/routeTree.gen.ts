@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
-import { Route as AwsLearningRouteImport } from './routes/aws-learning'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -40,9 +40,9 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AwsLearningRoute = AwsLearningRouteImport.update({
-  id: '/aws-learning',
-  path: '/aws-learning',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -105,7 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/aws-learning': typeof AwsLearningRoute
+  '/admin': typeof AdminRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
@@ -122,7 +122,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/aws-learning': typeof AwsLearningRoute
+  '/admin': typeof AdminRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
@@ -140,7 +140,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/aws-learning': typeof AwsLearningRoute
+  '/admin': typeof AdminRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
@@ -159,7 +159,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/aws-learning'
+    | '/admin'
     | '/cart'
     | '/categories'
     | '/checkout'
@@ -176,7 +176,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/aws-learning'
+    | '/admin'
     | '/cart'
     | '/categories'
     | '/checkout'
@@ -193,7 +193,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/aws-learning'
+    | '/admin'
     | '/cart'
     | '/categories'
     | '/checkout'
@@ -211,7 +211,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
-  AwsLearningRoute: typeof AwsLearningRoute
+  AdminRoute: typeof AdminRoute
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -248,11 +248,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/aws-learning': {
-      id: '/aws-learning'
-      path: '/aws-learning'
-      fullPath: '/aws-learning'
-      preLoaderRoute: typeof AwsLearningRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -339,7 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
-  AwsLearningRoute: AwsLearningRoute,
+  AdminRoute: AdminRoute,
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
   CheckoutRoute: CheckoutRoute,

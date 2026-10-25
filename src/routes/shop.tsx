@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductFilters, type FilterState } from "@/components/product/ProductFilters";
 import { ProductGrid } from "@/components/product/ProductGrid";
@@ -20,16 +26,18 @@ export const Route = createFileRoute("/shop")({
       { title: "Shop all products — IntelliMart" },
       {
         name: "description",
-        content: "Filter and sort the full IntelliMart catalogue: electronics, computing, gaming, smart devices and more.",
+        content:
+          "Filter and sort the full IntelliMart catalogue: electronics, computing, gaming, smart devices and more.",
       },
       { property: "og:title", content: "Shop all products — IntelliMart" },
-      { property: "og:description", content: "Filter by category, price and rating across the full catalogue." },
+      {
+        property: "og:description",
+        content: "Filter by category, price and rating across the full catalogue.",
+      },
     ],
   }),
   component: ShopPage,
 });
-
-const PRICE_MAX = 80000;
 
 function ShopPage() {
   const { category, sale } = Route.useSearch();
@@ -38,9 +46,11 @@ function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<NonNullable<ProductQuery["sort"]>>("featured");
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
+  const [priceReady, setPriceReady] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     categories: category ? [category] : [],
-    maxPrice: PRICE_MAX,
+    maxPrice: 0,
     minRating: 0,
   });
 
@@ -49,24 +59,53 @@ function ShopPage() {
   }, [category]);
 
   useEffect(() => {
-    productService.getCategories().then(setCategories).catch(() => setCategories([]));
+    let cancelled = false;
+    Promise.all([productService.getCategories(), productService.getPriceRange()])
+      .then(([departments, range]) => {
+        if (cancelled) return;
+        setCategories(departments);
+        setPriceRange(range);
+        setFilters((value) => ({ ...value, maxPrice: range.max }));
+        setPriceReady(true);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setError(error instanceof Error ? error.message : "Could not load the catalogue.");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
+    if (!priceReady) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     productService
-      .list({ categories: filters.categories, maxPrice: filters.maxPrice, minRating: filters.minRating, sort })
-      .then((list) => !cancelled && setProducts(sale ? list.filter((p) => p.originalPrice > p.price) : list))
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Failed to load products"))
+      .list({
+        categories: filters.categories,
+        maxPrice: filters.maxPrice,
+        minRating: filters.minRating,
+        sort,
+      })
+      .then(
+        (list) =>
+          !cancelled && setProducts(sale ? list.filter((p) => p.originalPrice > p.price) : list),
+      )
+      .catch(
+        (e: unknown) =>
+          !cancelled && setError(e instanceof Error ? e.message : "Failed to load products"),
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [filters, sort, sale]);
+  }, [filters, sort, sale, priceReady]);
 
-  const reset = () => setFilters({ categories: [], maxPrice: PRICE_MAX, minRating: 0 });
+  const reset = () => setFilters({ categories: [], maxPrice: priceRange.max, minRating: 0 });
 
   const filterPanel = useMemo(
     () => (
@@ -74,23 +113,27 @@ function ShopPage() {
         categories={categories}
         state={filters}
         onChange={setFilters}
-        priceRange={{ min: 1000, max: PRICE_MAX }}
+        priceRange={{ min: priceRange.min, max: Math.max(priceRange.max, priceRange.min + 1) }}
         onReset={reset}
       />
     ),
-    [categories, filters],
+    [categories, filters, priceRange.max, priceRange.min, reset],
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-8">
-        <h1 className="font-display text-3xl font-semibold sm:text-4xl">{sale ? "Deals" : "Shop"}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {sale ? "Everything currently marked down." : "The full IntelliMart catalogue."}
+    <div className="site-container pb-24 pt-10 sm:pt-16">
+      <header className="mb-12 sm:mb-16">
+        <h1 className="font-display text-5xl font-medium tracking-tight sm:text-7xl">
+          {sale ? "The good deals" : "The collection"}
+        </h1>
+        <p className="mt-5 text-base">
+          {sale
+            ? "Good finds. Even better prices."
+            : "For your desk, your downtime and everything in between."}
         </p>
       </header>
 
-      <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
+      <div className="grid gap-10 lg:grid-cols-[200px_minmax(0,1fr)]">
         <aside className="hidden lg:block">
           <div className="sticky top-24">{filterPanel}</div>
         </aside>
@@ -132,7 +175,12 @@ function ShopPage() {
             {loading ? "Loading products…" : `${products.length} products`}
           </p>
 
-          <ProductGrid products={products} loading={loading} error={error} />
+          <ProductGrid
+            products={products}
+            loading={loading}
+            error={error}
+            className="catalogue-grid"
+          />
         </div>
       </div>
     </div>

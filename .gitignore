@@ -32,3 +32,19 @@ dist-ssr
 *.sw?
 
 personal/
+
+# Local design inspections and screenshots
+.taste-skill/
+
+# AWS build outputs and local configuration
+backend/cdk.out/
+backend/outputs.json
+backend/.local/
+.env
+.env.*
+!.env.example
+.agents/skills/*
+
+skills/*
+
+*.env

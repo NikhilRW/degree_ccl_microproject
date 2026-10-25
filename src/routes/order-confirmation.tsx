@@ -3,7 +3,6 @@ import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState, LoadingState } from "@/components/common/states";
-import { AwsIntegrationPlaceholder } from "@/components/aws/AwsIntegrationPlaceholder";
 import { orderService } from "@/services";
 import type { Order } from "@/types";
 import { currency, formatDate } from "@/utils/format";
@@ -15,7 +14,11 @@ export const Route = createFileRoute("/order-confirmation")({
   head: () => ({
     meta: [
       { title: "Order confirmed — IntelliMart" },
-      { name: "description", content: "Your IntelliMart order is confirmed. Track the order ID, items and estimated delivery." },
+      {
+        name: "description",
+        content:
+          "Your IntelliMart order is confirmed. Track the order ID, items and estimated delivery.",
+      },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Order confirmed — IntelliMart" },
       { property: "og:description", content: "Order details and estimated delivery." },
@@ -30,14 +33,25 @@ function ConfirmationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    orderService.getById(id).then(setOrder).finally(() => setLoading(false));
+    orderService
+      .getById(id)
+      .then(setOrder)
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <LoadingState label="Fetching your order" />;
   if (!order)
     return (
       <div className="mx-auto max-w-3xl px-4 py-20">
-        <EmptyState title="Order not found" description="We couldn't find that order." action={<Button asChild><Link to="/shop">Continue shopping</Link></Button>} />
+        <EmptyState
+          title="Order not found"
+          description="We couldn't find that order."
+          action={
+            <Button asChild>
+              <Link to="/shop">Continue shopping</Link>
+            </Button>
+          }
+        />
       </div>
     );
 
@@ -47,7 +61,8 @@ function ConfirmationPage() {
         <CheckCircle2 className="mx-auto h-14 w-14 text-success" aria-hidden />
         <h1 className="mt-5 font-display text-3xl font-semibold sm:text-4xl">Order Confirmed!</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Thanks {order.address.fullName.split(" ")[0]} — we've sent a confirmation to your inbox.
+          Thanks {order.address.fullName.split(" ")[0]} — your order details are below. Pay on
+          delivery.
         </p>
       </div>
 
@@ -59,7 +74,9 @@ function ConfirmationPage() {
             ["Estimated delivery", formatDate(order.estimatedDelivery)],
           ].map(([k, v]) => (
             <div key={k}>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{k}</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {k}
+              </dt>
               <dd className="mt-1 text-sm font-medium">{v}</dd>
             </div>
           ))}
@@ -69,35 +86,37 @@ function ConfirmationPage() {
           {order.items.map((i) => (
             <li key={i.productId} className="flex items-center gap-3 py-3">
               <img src={i.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
-              <span className="flex-1 text-sm">{i.name} × {i.quantity}</span>
-              <span className="text-sm font-semibold tabular-nums">{currency(i.price * i.quantity)}</span>
+              <span className="flex-1 text-sm">
+                {i.name} × {i.quantity}
+              </span>
+              <span className="text-sm font-semibold tabular-nums">
+                {currency(i.price * i.quantity)}
+              </span>
             </li>
           ))}
         </ul>
 
         <div className="mt-4 flex justify-between border-t border-border pt-4 text-base font-semibold">
-          <span>Total paid</span>
+          <span>Order total</span>
           <span className="tabular-nums">{currency(order.totals.total)}</span>
         </div>
 
         <div className="mt-6 text-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Shipping address</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Shipping address
+          </h2>
           <p className="mt-1 text-muted-foreground">
-            {order.address.fullName}, {order.address.address}, {order.address.city}, {order.address.state} {order.address.postalCode}
+            {order.address.fullName}, {order.address.address}, {order.address.city},{" "}
+            {order.address.state} {order.address.postalCode}
           </p>
         </div>
       </div>
 
-      <AwsIntegrationPlaceholder
-        className="mt-8"
-        service="Amazon SES + EventBridge + SQS"
-        objective="Emit OrderCreated, queue it, and send the confirmation email from Lambda."
-        location="src/services/notifications/index.ts"
-      />
-
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild variant="hero">
-          <Link to="/account" hash="orders">View order</Link>
+          <Link to="/account" hash="orders">
+            View order
+          </Link>
         </Button>
         <Button asChild variant="outline">
           <Link to="/shop">Continue shopping</Link>

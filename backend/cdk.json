@@ -1,0 +1,9 @@
+{
+  "app": "node --import tsx infra/app.ts",
+  "context": {
+    "@aws-cdk/aws-lambda:useCdkManagedLogGroup": false,
+    "senderEmail": "nikhilwankhede0707@gmail.com",
+    "frontendOrigin": "https://4u95ynchr3.execute-api.ap-south-1.amazonaws.com",
+    "extraOrigins": "http://localhost:8000,http://localhost:5173"
+  }
+}

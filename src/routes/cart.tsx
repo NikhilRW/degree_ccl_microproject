@@ -3,7 +3,6 @@ import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CartItemRow } from "@/components/cart/CartItemRow";
 import { EmptyState, LoadingState } from "@/components/common/states";
-import { AwsIntegrationPlaceholder } from "@/components/aws/AwsIntegrationPlaceholder";
 import { useCart } from "@/hooks/useCart";
 import { currency } from "@/utils/format";
 
@@ -11,9 +10,16 @@ export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
       { title: "Your cart — IntelliMart" },
-      { name: "description", content: "Review the items in your IntelliMart cart, update quantities and continue to checkout." },
+      {
+        name: "description",
+        content:
+          "Review the items in your IntelliMart cart, update quantities and continue to checkout.",
+      },
       { property: "og:title", content: "Your cart — IntelliMart" },
-      { property: "og:description", content: "Review items, update quantities and continue to checkout." },
+      {
+        property: "og:description",
+        content: "Review items, update quantities and continue to checkout.",
+      },
     ],
   }),
   component: CartPage,
@@ -28,8 +34,8 @@ function CartPage() {
   if (loading) return <LoadingState label="Loading your cart" />;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="font-display text-3xl font-semibold sm:text-4xl">Your cart</h1>
+    <div className="site-container pb-24 pt-10 sm:pt-16">
+      <h1 className="font-display text-5xl font-medium sm:text-7xl">Your bag</h1>
 
       {active.length === 0 && saved.length === 0 ? (
         <div className="mt-10">
@@ -47,34 +53,29 @@ function CartPage() {
       ) : (
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_340px]">
           <div>
-            <div className="divide-y divide-border rounded-2xl border border-border bg-card px-5">
+            <div className="space-y-5">
               {active.map((i) => (
                 <CartItemRow key={i.productId} item={i} />
               ))}
-              {active.length === 0 && <p className="py-8 text-sm text-muted-foreground">No active items.</p>}
+              {active.length === 0 && (
+                <p className="py-8 text-sm text-muted-foreground">No active items.</p>
+              )}
             </div>
 
             {saved.length > 0 && (
               <section className="mt-10">
                 <h2 className="font-display text-lg font-semibold">Saved for later</h2>
-                <div className="mt-3 divide-y divide-border rounded-2xl border border-border bg-card px-5">
+                <div className="mt-3 space-y-5">
                   {saved.map((i) => (
                     <CartItemRow key={i.productId} item={i} />
                   ))}
                 </div>
               </section>
             )}
-
-            <AwsIntegrationPlaceholder
-              className="mt-8"
-              service="Amazon DynamoDB (Cart table)"
-              objective="Persist the cart per authenticated user instead of localStorage."
-              location="src/services/cart/mockCartService.ts"
-            />
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="bg-surface p-6 sm:p-8">
               <h2 className="font-display text-lg font-semibold">Order summary</h2>
               <dl className="mt-5 space-y-3 text-sm">
                 {[
@@ -88,7 +89,7 @@ function CartPage() {
                     <dd className="tabular-nums">{v}</dd>
                   </div>
                 ))}
-                <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
+                <div className="flex justify-between pt-4 text-lg font-medium">
                   <dt>Total</dt>
                   <dd className="tabular-nums">{currency(t.total)}</dd>
                 </div>

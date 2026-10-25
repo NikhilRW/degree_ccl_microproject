@@ -1,9 +1,18 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
 
-export function SearchBar({ className, initialValue = "" }: { className?: string; initialValue?: string }) {
+export function SearchBar({
+  className,
+  initialValue = "",
+  autoFocus = false,
+}: {
+  className?: string;
+  initialValue?: string;
+  autoFocus?: boolean;
+}) {
+  const id = useId();
   const [value, setValue] = useState(initialValue);
   const navigate = useNavigate();
 
@@ -15,18 +24,18 @@ export function SearchBar({ className, initialValue = "" }: { className?: string
   };
 
   return (
-    <form role="search" onSubmit={submit} className={cn("relative w-full", className)}>
-      <label htmlFor="site-search" className="sr-only">
+    <form role="search" onSubmit={submit} className={cn("search-form", className)}>
+      <label htmlFor={id} className="sr-only">
         Search products
       </label>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <Search className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />
       <input
-        id="site-search"
+        id={id}
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search products, categories…"
-        className="h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-3 text-sm outline-none transition-smooth placeholder:text-muted-foreground focus:border-primary focus:bg-card"
+        placeholder="Find your next favourite"
+        autoFocus={autoFocus}
       />
     </form>
   );

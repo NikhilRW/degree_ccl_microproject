@@ -1,16 +1,11 @@
-export interface AnalyticsService {
-  track(event: string, properties?: Record<string, unknown>): void;
-  pageView(path: string): void;
-}
+import { analyticsFn } from "@/functions/customer.functions";
+import { unwrap, ServiceError } from "../rpc";
 
-/**
- * AWS LEARNING ZONE — Amazon CloudWatch RUM / Kinesis Firehose / Pinpoint
- * Batch events client-side, ship them to an API Gateway endpoint, and let a
- * Lambda write to Firehose -> S3 -> Athena for product analytics.
- */
-export const mockAnalyticsService: AnalyticsService = {
-  track(event, properties) { console.debug("[analytics]", event, properties ?? {}); },
-  pageView(path) { console.debug("[analytics] page_view", path); },
+export const analyticsService = {
+  track(event: string, properties?: Record<string, string | number | boolean | null>) {
+    void unwrap(() => analyticsFn({ data: { event, properties } }), false).catch(error => {
+      if (!(error instanceof ServiceError && error.status === 401)) console.error("Analytics request failed", error);
+    });
+  },
+  pageView(path: string) { this.track("page_view", { path }); },
 };
-
-export const analyticsService: AnalyticsService = mockAnalyticsService;

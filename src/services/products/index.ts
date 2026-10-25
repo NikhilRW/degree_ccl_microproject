@@ -1,2 +1,2 @@
 export * from "./types";
-export { productService, mockProductService } from "./mockProductService";
+export { productService } from "./awsProductService";

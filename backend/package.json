@@ -1,0 +1,34 @@
+{
+  "name": "intellimart-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy --outputs-file outputs.json",
+    "import:catalogue": "tsx scripts/import-catalogue.ts",
+    "restore:catalogue": "tsx scripts/restore-catalogue.ts",
+    "publish:catalogue": "tsx scripts/publish-catalogue.ts",
+    "verify:catalogue:live": "tsx scripts/verify-live-catalogue.ts",
+    "configure:local": "tsx scripts/configure-local.ts",
+    "order:delivered": "tsx scripts/mark-order-delivered.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1000.0",
+    "@aws-sdk/client-sesv2": "^3.1000.0",
+    "@aws-sdk/lib-dynamodb": "^3.1000.0",
+    "@aws-sdk/util-dynamodb": "^3.996.9",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.150",
+    "@types/node": "^22.16.5",
+    "aws-cdk": "^2.1000.0",
+    "aws-cdk-lib": "^2.200.0",
+    "constructs": "^10.4.2",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.3"
+  }
+}

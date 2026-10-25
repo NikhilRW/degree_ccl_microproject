@@ -1,12 +1,4 @@
-/**
- * Centralized domain models for IntelliMart.
- *
- * AWS LEARNING ZONE:
- * These interfaces are intentionally the *contract* between the UI and the
- * service layer. When you later back them with Amazon DynamoDB tables
- * (Users, Products, Orders, Cart, Wishlist) keep these shapes stable so the
- * UI never needs to change.
- */
+/** Shared contracts for the storefront and AWS backend. */
 
 export interface Review {
   id: string;
@@ -17,6 +9,13 @@ export interface Review {
   title: string;
   body: string;
   createdAt: string;
+  verifiedPurchase?: boolean;
+}
+
+export interface ReviewEligibility {
+  canReview: boolean;
+  reason: string;
+  review: Review | null;
 }
 
 export interface Product {
@@ -122,12 +121,21 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string | undefined;
-  createdAt: string;
+  createdAt?: string;
   addresses: Address[];
 }
 
+export interface AdminOrderSummary {
+  id: string;
+  ownerId: string;
+  customerName: string;
+  createdAt: string;
+  total: number;
+  status: OrderStatus;
+  items: Pick<OrderItem, "productId" | "name" | "quantity" | "price">[];
+}
+
 export interface Session {
-  accessToken: string;
   expiresAt: number;
   user: User;
 }
@@ -139,18 +147,4 @@ export interface ProductQuery {
   maxPrice?: number;
   minRating?: number;
   sort?: "featured" | "price-asc" | "price-desc" | "rating" | "newest";
-}
-
-export type ServiceStatus = "frontend-ready" | "integration-pending" | "implemented";
-
-export interface AwsServiceEntry {
-  id: string;
-  name: string;
-  category: string;
-  purpose: string;
-  status: ServiceStatus;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  location: string;
-  tasks: string[];
-  docsUrl: string;
 }

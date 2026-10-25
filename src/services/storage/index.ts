@@ -1,24 +1,24 @@
-export interface StorageService {
-  uploadFile(file: File, path: string): Promise<{ key: string; url: string }>;
-  deleteFile(key: string): Promise<void>;
-  getFileUrl(key: string): Promise<string>;
-}
+import { fileFn, uploadFn } from "@/functions/customer.functions";
+import { unwrap } from "../rpc";
 
-/**
- * AWS LEARNING ZONE — Amazon S3 (+ CloudFront)
- * Replace with presigned-URL uploads:
- *   1. Lambda issues a presigned PUT for `s3://$VITE_S3_BUCKET/<path>`
- *   2. Browser PUTs the file directly to S3 (never through your API)
- *   3. Reads are served from CloudFront, not the bucket origin
- * Never ship AWS credentials to the browser.
- */
-export const mockStorageService: StorageService = {
-  async uploadFile(file, path) {
-    const key = `${path.replace(/\/$/, "")}/${Date.now()}-${file.name}`;
-    return { key, url: URL.createObjectURL(file) };
+export const storageService = {
+  async uploadFile(file: File) {
+    const policy = await unwrap(() => uploadFn({ data: { name: file.name, contentType: file.type, size: file.size } }));
+    const form = new FormData();
+    Object.entries(policy.fields).forEach(([key, value]) => form.append(key, value));
+    form.append("file", file);
+    const response = await fetch(policy.url, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!response.ok) throw new Error("The file could not be uploaded to S3.");
+    return { key: policy.key, url: policy.fileUrl };
   },
-  async deleteFile() { /* no-op until S3 is wired up */ },
-  async getFileUrl(key) { return `/mock-storage/${key}`; },
+  async deleteFile(key: string) {
+    await unwrap(() => fileFn({ data: { key, remove: true } }));
+  },
+  async getFileUrl(key: string) {
+    return (await unwrap(() => fileFn({ data: { key, remove: false } }))).url;
+  },
 };
-
-export const storageService: StorageService = mockStorageService;

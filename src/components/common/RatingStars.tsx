@@ -19,11 +19,14 @@ export function RatingStars({
         {[1, 2, 3, 4, 5].map((i) => (
           <Star
             key={i}
-            className={cn(px, i <= Math.round(rating) ? "fill-highlight text-highlight" : "text-border")}
+            className={cn(
+              px,
+              i <= Math.round(rating) ? "fill-highlight text-highlight" : "text-border",
+            )}
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-muted-foreground">
+      <span className="text-sm text-muted-foreground">
         {rating.toFixed(1)}
         {reviewCount !== undefined && ` (${reviewCount.toLocaleString()})`}
       </span>

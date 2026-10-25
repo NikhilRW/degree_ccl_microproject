@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Heart, ShieldCheck, ShoppingBag, Truck, Undo2 } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +8,7 @@ import { QuantitySelector } from "@/components/common/QuantitySelector";
 import { RatingStars } from "@/components/common/RatingStars";
 import { ErrorState, LoadingState } from "@/components/common/states";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import { AwsIntegrationPlaceholder } from "@/components/aws/AwsIntegrationPlaceholder";
+import { ProductReviewForm } from "@/components/product/ProductReviewForm";
 import { productService } from "@/services";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -20,7 +20,10 @@ export const Route = createFileRoute("/product/$id")({
   head: ({ params }) => ({
     meta: [
       { title: `Product ${params.id} — IntelliMart` },
-      { name: "description", content: "Full specifications, reviews, shipping and returns for this IntelliMart product." },
+      {
+        name: "description",
+        content: "Full specifications, reviews, shipping and returns for this IntelliMart product.",
+      },
       { property: "og:title", content: "IntelliMart product" },
       { property: "og:description", content: "Specifications, reviews, shipping and returns." },
     ],
@@ -45,19 +48,25 @@ function ProductPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError(null);
     setImage(0);
     setQty(1);
     productService
       .getById(id)
       .then(async (p) => {
         if (cancelled) return;
-        setProduct(p);
         if (p) {
-          setRelated(await productService.getRelated(p.id, 4));
-          setReviews(await productService.getReviews(p.id));
+          const [related, reviews] = await Promise.all([productService.getRelated(p.id, 4), productService.getReviews(p.id)]);
+          if (cancelled) return;
+          setRelated(related);
+          setReviews(reviews);
         }
+        if (!cancelled) setProduct(p);
       })
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Failed to load product"))
+      .catch(
+        (e: unknown) =>
+          !cancelled && setError(e instanceof Error ? e.message : "Failed to load product"),
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -65,7 +74,12 @@ function ProductPage() {
   }, [id]);
 
   if (loading) return <LoadingState label="Loading product" />;
-  if (error) return <div className="mx-auto max-w-3xl px-4 py-16"><ErrorState message={error} /></div>;
+  if (error)
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16">
+        <ErrorState message={error} />
+      </div>
+    );
   if (!product)
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
@@ -79,28 +93,33 @@ function ProductPage() {
   const outOfStock = product.stock === 0;
 
   const buyNow = async () => {
-    await add(product.id, qty);
+    if (!(await add(product.id, qty))) return;
     setDrawerOpen(false);
     void navigate({ to: "/checkout" });
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
-        <Link to="/" className="hover:text-primary">Home</Link> <span aria-hidden>/</span>{" "}
-        <Link to="/shop" className="hover:text-primary">Shop</Link> <span aria-hidden>/</span>{" "}
-        <span className="text-foreground">{product.name}</span>
+    <div className="site-container pb-24 pt-8 sm:pt-12">
+      <nav aria-label="Breadcrumb" className="mb-8 text-[14px] text-muted-foreground">
+        <Link to="/" className="hover:text-primary">
+          Home
+        </Link>{" "}
+        <span aria-hidden>/</span>{" "}
+        <Link to="/shop" className="hover:text-primary">
+          Shop
+        </Link>{" "}
+        <span aria-hidden>/</span> <span className="text-foreground">{product.name}</span>
       </nav>
 
       <div className="grid gap-12 lg:grid-cols-2">
         <div>
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="overflow-clip bg-surface">
             <img
               src={product.images[image]}
               alt={product.name}
               width={1200}
               height={1200}
-              className="aspect-square w-full object-cover animate-soft-fade"
+              className="aspect-square w-full object-cover"
               key={image}
             />
           </div>
@@ -113,8 +132,10 @@ function ProductPage() {
                 aria-label={`View image ${i + 1}`}
                 aria-current={i === image}
                 className={cn(
-                  "h-20 w-20 overflow-hidden rounded-xl border-2 transition-smooth",
-                  i === image ? "border-primary" : "border-border hover:border-primary/50",
+                  "h-20 w-20 overflow-hidden transition-smooth",
+                  i === image
+                    ? "outline-2 outline-offset-4 outline-primary"
+                    : "opacity-65 hover:opacity-100",
                 )}
               >
                 <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -124,33 +145,41 @@ function ProductPage() {
         </div>
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{product.category}</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight">{product.name}</h1>
+          <h1 className="font-display text-[32px] font-medium leading-[1.1] sm:text-5xl">
+            {product.name.replace("Wireless Noise Cancelling", "Noise-cancelling")}
+          </h1>
+          <p className="mt-4 text-sm text-muted-foreground">{product.category}</p>
           <div className="mt-3">
             <RatingStars rating={product.rating} reviewCount={product.reviewCount} size="md" />
           </div>
           <div className="mt-5">
             <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="lg" />
           </div>
-          <p className={cn("mt-3 text-sm font-medium", outOfStock ? "text-destructive" : product.stock <= 10 ? "text-warning" : "text-success")}>
+          <p
+            className={cn(
+              "mt-3 text-sm font-medium",
+              outOfStock
+                ? "text-destructive"
+                : product.stock <= 10
+                  ? "text-warning"
+                  : "text-success",
+            )}
+          >
             {stockLabel(product.stock)}
           </p>
 
-          <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
+          <ul className="mt-6 space-y-2 text-base">
             {product.highlights.map((h) => (
-              <li key={h} className="flex gap-2">
-                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden />
-                {h}
-              </li>
+              <li key={h}>{h}</li>
             ))}
           </ul>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <QuantitySelector value={qty} max={Math.max(product.stock, 1)} onChange={setQty} />
             <Button disabled={outOfStock} onClick={() => void add(product.id, qty)}>
-              <ShoppingBag aria-hidden /> Add to cart
+              <ShoppingBag aria-hidden /> Add to bag
             </Button>
-            <Button variant="hero" disabled={outOfStock} onClick={() => void buyNow()}>
+            <Button variant="outline" disabled={outOfStock} onClick={() => void buyNow()}>
               Buy now
             </Button>
             <Button
@@ -160,33 +189,24 @@ function ProductPage() {
               aria-pressed={wishlist.has(product.id)}
               onClick={() => wishlist.toggle(product.id)}
             >
-              <Heart className={cn(wishlist.has(product.id) && "fill-destructive text-destructive")} aria-hidden />
+              <Heart
+                className={cn(wishlist.has(product.id) && "fill-destructive text-destructive")}
+                aria-hidden
+              />
             </Button>
           </div>
 
-          <div className="mt-8 grid gap-4 rounded-2xl border border-border bg-surface/60 p-5 sm:grid-cols-3">
+          <div className="mt-10 space-y-5 bg-surface p-6">
             {[
-              { icon: Truck, title: "Shipping", body: "Free over ₹20,000. Express in 2 days." },
-              { icon: Undo2, title: "Returns", body: "30-day no-questions returns." },
-              { icon: ShieldCheck, title: "Warranty", body: "2 years, covered end to end." },
+              { title: "Shipping", body: "Free standard shipping over ₹20,000." },
+              { title: "Delivery options", body: "Choose standard or express at checkout." },
             ].map((b) => (
-              <div key={b.title} className="flex gap-2.5">
-                <b.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <div>
-                  <h2 className="text-xs font-semibold">{b.title}</h2>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{b.body}</p>
-                </div>
+              <div key={b.title}>
+                <h2 className="text-base font-medium">{b.title}</h2>
+                <p className="mt-1 text-sm">{b.body}</p>
               </div>
             ))}
           </div>
-
-          <AwsIntegrationPlaceholder
-            className="mt-6"
-            compact
-            service="Amazon DynamoDB + API Gateway + Lambda"
-            objective="Serve this product from a Products table instead of the mock catalogue."
-            location="src/services/products/mockProductService.ts"
-          />
         </div>
       </div>
 
@@ -196,7 +216,7 @@ function ProductPage() {
           <TabsTrigger value="specifications">Specifications</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
         </TabsList>
-        <TabsContent value="description" className="max-w-3xl pt-6 text-sm leading-relaxed text-muted-foreground">
+        <TabsContent value="description" className="max-w-3xl pt-6 text-base leading-relaxed">
           {product.description}
         </TabsContent>
         <TabsContent value="specifications" className="pt-6">
@@ -210,15 +230,21 @@ function ProductPage() {
           </dl>
         </TabsContent>
         <TabsContent value="reviews" className="pt-6">
+          <ProductReviewForm productId={product.id} onSubmitted={({ review, rating, reviewCount }) => {
+            setReviews(current => [review, ...current.filter(item => item.id !== review.id)]);
+            setProduct(current => current?.id === review.productId ? { ...current, rating, reviewCount } : current);
+          }} />
+          {!reviews.length && <p className="mb-5 text-sm text-muted-foreground">No reviews yet.</p>}
           <ul className="max-w-3xl space-y-5">
             {reviews.map((r) => (
-              <li key={r.id} className="rounded-xl border border-border bg-card p-5">
+              <li key={r.id} className="bg-surface p-6">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold">{r.author}</p>
                   <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span>
                 </div>
                 <div className="mt-2">
                   <RatingStars rating={r.rating} />
+                  {r.verifiedPurchase === true && <p className="mt-2 text-xs text-muted-foreground">Verified purchase</p>}
                 </div>
                 <h3 className="mt-3 text-sm font-semibold">{r.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{r.body}</p>
@@ -228,9 +254,9 @@ function ProductPage() {
         </TabsContent>
       </Tabs>
 
-      <section className="mt-16">
-        <h2 className="font-display text-2xl font-semibold">You may also like</h2>
-        <div className="mt-6">
+      <section className="mt-24">
+        <h2 className="font-display text-3xl font-medium sm:text-4xl">You might also like</h2>
+        <div className="mt-10">
           <ProductGrid products={related} />
         </div>
       </section>

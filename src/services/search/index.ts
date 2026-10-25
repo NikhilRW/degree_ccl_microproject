@@ -1,22 +1,7 @@
-import type { Product } from "@/types";
-import { productService } from "../products";
+import { productsFn, suggestionsFn } from "@/functions/catalogue.functions";
+import { unwrap } from "../rpc";
 
-export interface SearchService {
-  search(term: string): Promise<Product[]>;
-  suggest(term: string): Promise<string[]>;
-}
-
-/**
- * AWS LEARNING ZONE — Amazon OpenSearch Service (or Kendra)
- * Today search is a client-side filter over the mock catalogue. Later, index
- * products into OpenSearch from a DynamoDB stream and query through Lambda.
- */
-export const mockSearchService: SearchService = {
-  async search(term) { return productService.list({ search: term }); },
-  async suggest(term) {
-    const results = await productService.list({ search: term });
-    return results.slice(0, 6).map((p) => p.name);
-  },
+export const searchService = {
+  search: (term: string) => unwrap(() => productsFn({ data: { search: term } }), false),
+  suggest: (term: string) => unwrap(() => suggestionsFn({ data: term }), false),
 };
-
-export const searchService: SearchService = mockSearchService;
