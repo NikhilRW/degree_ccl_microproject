@@ -17,7 +17,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { WishlistProvider } from "@/hooks/useWishlist";
 import { Toaster } from "@/components/ui/sonner";
-import { DemoNotice } from "@/components/layout/DemoNotice";
 
 function NotFoundComponent() {
   return (
@@ -148,7 +147,6 @@ function RootComponent() {
                 Skip to content
               </a>
               <Navbar />
-              <DemoNotice />
               <main id="main" className="flex-1">
                 {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
                 <Outlet />

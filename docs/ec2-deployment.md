@@ -17,21 +17,30 @@ Lambda, failure queue, table, user pool, and media bucket.
 
 ## 1. Prepare the host
 
-Start `HH_EC2` and associate an Elastic IP so DNS remains stable after stop/start.
-The instance currently has no IAM instance profile. Attach a least-privilege EC2
-role before starting IntelliMart; use temporary role credentials from the AWS SDK,
-never copy developer access keys to the host. Required runtime access is to the
-IntelliMart DynamoDB table, the media bucket (including customer/admin upload
-prefixes), and `cognito-idp:AdminListGroupsForUser` for the existing user pool.
-The app's Cognito password/token calls use the public pool client and do not need
-IAM credentials. Do not grant the app permission to add users to Cognito groups.
+In **EC2 → Instances**, select `HH_EC2` (`i-0764e473e55dd19d7`) and start it. Before
+running the app, attach an EC2 instance profile with the least-privilege policy
+from the prior setup: access to the IntelliMart DynamoDB table and order index,
+read access to the media bucket's `catalogue/*` and `products/*` keys, read/write
+access to the `customers/*` upload keys, and
+`cognito-idp:AdminListGroupsForUser` on the existing user pool. The app's Cognito
+password/token calls use the public pool client and need no IAM permissions. Do
+not grant permission to add Cognito users to groups, and never put developer
+access keys on the server. In the EC2 console choose **Actions → Security → Modify
+IAM role** to attach the instance profile. Optionally attach
+`AmazonSSMManagedInstanceCore` as well if you want Session Manager access.
+
+Allocate an Elastic IP under **EC2 → Network & Security → Elastic IP addresses**,
+then associate it with `HH_EC2`. This stable IPv4 address is what the domain's DNS
+record will use. Elastic IPs can incur charges; keep it associated while the
+instance is in use.
 
 The current instance is `t4g.micro` (1 GiB RAM) with an 8 GiB unencrypted root
 volume. The production Node server may be memory constrained at this size; monitor
 memory and disk and consider `t4g.small` before sustained traffic. The EC2
-security group currently permits SSH from anywhere and HTTPS, but not HTTP. Restrict
-SSH to the operator's IP, allow inbound 80 for ACME certificate issuance/renewal,
-and keep 443 open. Do not expose the Node port (3000) publicly.
+security group currently permits SSH from anywhere and HTTPS, but not HTTP. In
+**EC2 → Security Groups → `HHSecureEC2` → Edit inbound rules**, restrict SSH (22)
+to your current public IP, allow HTTP (80) for Let's Encrypt certificate
+issuance/renewal, and keep HTTPS (443) open. Do not expose the Node port (3000).
 
 Install Node.js 22 and Nginx on Amazon Linux 2023, then create an application
 directory and a dedicated unprivileged `intellimart` account:
@@ -55,6 +64,8 @@ Compress-Archive -Path .output\* -DestinationPath intellimart-output.zip -Force
 scp -i "C:\path\to\ec2-login.pem" .\intellimart-output.zip ec2-user@<ELASTIC_IP>:/tmp/
 ```
 
+Connect with `ssh -i "C:\path\to\ec2-login.pem" ec2-user@<ELASTIC_IP>`.
+
 On the instance, unpack the generated `.output` contents under `/opt/intellimart`
 and set ownership to the dedicated service account. The build is bundled and runs
 on ARM64; it does not require copying the Windows `node_modules` directory:
@@ -76,6 +87,14 @@ TABLE_NAME=<existing TableName output>
 MEDIA_BUCKET=<existing MediaBucket output>
 COGNITO_CLIENT_ID=<existing UserPoolClientId output>
 COGNITO_USER_POOL_ID=<existing UserPoolId output>
+```
+
+Edit the file as root and restrict access:
+
+```sh
+sudo nano /etc/intellimart.env
+sudo chown root:root /etc/intellimart.env
+sudo chmod 600 /etc/intellimart.env
 ```
 
 Do not set `ASSET_BUCKET`: the Nitro Node server serves its generated public
@@ -112,7 +131,16 @@ WantedBy=multi-user.target
 
 Confirm Node's actual path with `command -v node` and adjust `ExecStart` if needed.
 Enable/start the service and verify `curl -I http://127.0.0.1:3000/` before exposing
-it. Configure Nginx to proxy HTTP/1.1 to `127.0.0.1:3000`, forwarding `Host`,
+it:
+
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now intellimart
+sudo systemctl status intellimart --no-pager
+curl -I http://127.0.0.1:3000/
+```
+
+Configure Nginx to proxy HTTP/1.1 to `127.0.0.1:3000`, forwarding `Host`,
 `X-Real-IP`, `X-Forwarded-For`, and `X-Forwarded-Proto`. Create
 `/etc/nginx/conf.d/intellimart.conf`:
 
@@ -135,30 +163,79 @@ server {
 Keep the application port bound to localhost. Validate and enable Nginx with
 `sudo nginx -t && sudo systemctl enable --now nginx`.
 
-## 4. TLS, DNS and verification
+## 4. Cloudflare TLS, DNS and verification
 
-For a single EC2 host, use a Let's Encrypt certificate on Nginx (ACM certificates
-cannot be installed directly on EC2). Temporarily serve HTTP on port 80 for ACME
-validation, then redirect HTTP to HTTPS. In Cloudflare, create an **A** record:
+You can use a Cloudflare Origin CA certificate on Nginx instead of Certbot. It is
+trusted by Cloudflare, **not directly by browsers**; visitors get Cloudflare's
+public edge certificate. Therefore the DNS record must be **Proxied** (orange
+cloud), and Cloudflare SSL/TLS encryption mode must be **Full (strict)**. A direct
+connection to the EC2 IP will not trust the Origin CA certificate.
+
+In Cloudflare **SSL/TLS → Origin Server → Create Certificate**, issue a certificate
+for `intellimart.nikhilwankhede.com`. Save the certificate and private key; keep
+the private key secret. In Cloudflare **DNS → Records**, create/update:
 
 | Name | Type | Content | Proxy |
 | --- | --- | --- | --- |
-| `intellimart` | A | The instance's Elastic IP | DNS only (grey cloud) |
+| `intellimart` | A | The instance's Elastic IP | Proxied (orange cloud) |
 
-Do not use the current API Gateway CNAME target. After DNS resolves, issue the
-certificate for `intellimart.nikhilwankhede.com` (for example, using Certbot's
-Nginx integration), enable automatic renewal, then
-verify the storefront, static assets, sign-in, product image reads/uploads, and
-admin RPCs. Sign in again on the new hostname because `__Host-` cookies are
-hostname-specific.
+Do not use the old API Gateway CNAME. In **SSL/TLS → Overview**, choose **Full
+(strict)** and confirm the Cloudflare edge certificate (Universal SSL) is active.
 
-The current API Gateway URL remains the rollback path until the custom hostname
-and EC2 application have been confirmed. From the repository root, first inspect
+On EC2, install the Cloudflare Origin certificate and private key:
+
+```sh
+sudo install -d -m 755 /etc/pki/tls/certs
+sudo install -d -m 700 /etc/pki/tls/private
+sudo nano /etc/pki/tls/certs/intellimart-origin.pem
+sudo nano /etc/pki/tls/private/intellimart-origin.key
+sudo chown root:root /etc/pki/tls/certs/intellimart-origin.pem /etc/pki/tls/private/intellimart-origin.key
+sudo chmod 644 /etc/pki/tls/certs/intellimart-origin.pem
+sudo chmod 600 /etc/pki/tls/private/intellimart-origin.key
+```
+
+Replace the Nginx server block with HTTP redirect plus an HTTPS proxy:
+
+```nginx
+server {
+    listen 80;
+    server_name intellimart.nikhilwankhede.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name intellimart.nikhilwankhede.com;
+    ssl_certificate /etc/pki/tls/certs/intellimart-origin.pem;
+    ssl_certificate_key /etc/pki/tls/private/intellimart-origin.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}
+```
+
+Validate/reload Nginx, wait for Cloudflare DNS/SSL to become active, then verify
+the site, static assets, sign-in, product image reads/uploads, and admin RPCs. Sign
+in again on the new hostname because `__Host-` cookies are hostname-specific.
+
+Before testing browser image uploads, add `https://intellimart.nikhilwankhede.com`
+to the media bucket's CORS allowed origins while preserving the existing API and
+local-development origins. Keep allowed methods POST/GET/HEAD and allowed headers
+`*`; do not make the bucket public.
+
+Keep the current API Gateway deployment available at its existing URL while
+verifying the custom hostname and EC2 application. From the repository root, first inspect
 the CDK diff, then deploy the retained-resource configuration:
 
 ```powershell
-npm.cmd --prefix backend run diff -- --context resourcesOnly=true
-npm.cmd --prefix backend run deploy -- --context resourcesOnly=true
+npm.cmd --prefix backend run diff -- --context resourcesOnly=true --context frontendOrigin=https://intellimart.nikhilwankhede.com --context "extraOrigins=https://4u95ynchr3.execute-api.ap-south-1.amazonaws.com,http://localhost:8000,http://localhost:5173"
+npm.cmd --prefix backend run deploy -- --context resourcesOnly=true --context frontendOrigin=https://intellimart.nikhilwankhede.com --context "extraOrigins=https://4u95ynchr3.execute-api.ap-south-1.amazonaws.com,http://localhost:8000,http://localhost:5173"
 ```
 
 Confirm the diff deletes only `StorefrontApp`, `StoreApi`/stage and `WebAssets`;

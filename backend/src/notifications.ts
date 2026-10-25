@@ -32,8 +32,10 @@ export const handler: DynamoDBStreamHandler = async (event) => {
                       (i) => `${i.name} x ${i.quantity}: INR ${i.price * i.quantity}`,
                     ),
                     "",
-                    `Total due on delivery: INR ${order.totals.total}`,
-                    "Payment method: Cash on delivery",
+                    `Order total: INR ${order.totals.total}`,
+                    order.payment.status === "mocked"
+                      ? "Payment: simulated approval only. No payment was processed or charged."
+                      : "Payment method: Cash on delivery (due on delivery)",
                     "",
                     `Ship to: ${order.address.address}, ${order.address.city}, ${order.address.state} ${order.address.postalCode}`,
                     "",

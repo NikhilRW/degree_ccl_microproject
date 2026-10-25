@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/states";
@@ -169,34 +170,12 @@ function AccountPage() {
                   ))}
                 </ul>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  {o.status === "pending" && (
-                    <Button
-                      size="sm"
-                      disabled={!!paying}
-                      onClick={() => {
-                        setPaying(o.id);
-                        void payExistingOrder(o.id)
-                          .then(async (value) => {
-                            setOrders((current) =>
-                              current.map((item) => (item.id === value.id ? value : item)),
-                            );
-                            await refreshCart().catch(() =>
-                              toast.error("Payment confirmed; reload to refresh the cart."),
-                            );
-                          })
-                          .catch((error: Error) => toast.error(error.message))
-                          .finally(() => setPaying(null));
-                      }}
-                    >
-                      {paying === o.id ? "Opening checkout…" : "Resume test payment"}
-                    </Button>
-                  )}
                   {["pending", "processing"].includes(o.status) && (
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        if (window.confirm(`Cancel ${o.id}? Paid test orders will be refunded.`))
+                        if (window.confirm(`Cancel ${o.id}?`))
                           void orderService.cancel(o.id).then(
                             (value) =>
                               setOrders((current) =>
@@ -209,23 +188,7 @@ function AccountPage() {
                       Cancel order
                     </Button>
                   )}
-                  {(o.status === "pending" || o.payment.status === "refund_pending") && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        void reconcileMyOrder({ data: o.id }).then(
-                          (value) =>
-                            setOrders((current) =>
-                              current.map((item) => (item.id === value.id ? value : item)),
-                            ),
-                          (error: Error) => toast.error(error.message),
-                        );
-                      }}
-                    >
-                      Verify / reconcile payment
-                    </Button>
-                  )}
+                  <p className="text-xs text-muted-foreground">Payment: {o.payment.method === "cod" ? "Cash on delivery" : o.payment.status === "mocked" ? "Mock-approved · no money charged" : o.payment.status}</p>
                   <Button asChild size="sm" variant="ghost">
                     <Link to="/order-confirmation" search={{ id: o.id }}>
                       Order details

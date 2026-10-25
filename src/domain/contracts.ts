@@ -39,7 +39,7 @@ export const orderSchema = z.object({
     city: z.string().trim().min(1).max(100), state: z.string().trim().min(1).max(100),
     postalCode: z.string().trim().min(3).max(15), country: z.string().refine(value => value === "India", "Delivery is available in India only."),
   }),
-  delivery: z.enum(["standard", "express"]), method: z.literal("cod"),
+  delivery: z.enum(["standard", "express"]), method: z.enum(["card", "upi", "cod"]),
   expectedTotal: z.number().int().nonnegative(), idempotencyKey: z.uuid(),
 });
 export const uploadSchema = z.object({

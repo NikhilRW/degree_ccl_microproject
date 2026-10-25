@@ -23,7 +23,6 @@ export const Route = createFileRoute("/login")({
     ],
   }),
   component: LoginPage,
-  loader: () => getRuntimeInfo(),
 });
 
 function LoginPage() {

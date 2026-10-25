@@ -60,14 +60,7 @@ export function Navbar() {
               <User strokeWidth={1.5} aria-hidden />
             </Link>
           </Button>
-            size="icon"
-            className="hidden sm:inline-flex"
-            aria-label={`Wishlist, ${wishlist.items.length} saved products`}
-          >
-            <Link to="/account" hash="wishlist">
-              <Heart strokeWidth={1.5} aria-hidden />
-            </Link>
-          </Button>
+
           <Button
             variant="ghost"
             className="gap-2 px-2"

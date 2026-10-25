@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { confirmUser, resendUserCode } from "@/server/auth.functions";
+import { confirmSignUpFn, resendCodeFn } from "@/functions/auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ function VerifyEmail() {
     event.preventDefault();
     setBusy(true);
     try {
-      await confirmUser({ data: { email, code } });
+      await confirmSignUpFn({ data: { email, code } });
       toast.success("Email verified. You can sign in.");
       void navigate({ to: "/login" });
     } catch (error) {
@@ -62,7 +62,7 @@ function VerifyEmail() {
           disabled={busy}
           onClick={() => {
             setBusy(true);
-            void resendUserCode({ data: { email } })
+            void resendCodeFn({ data: { email } })
               .then(
                 () => toast.success("Verification code requested"),
                 (error: Error) => toast.error(error.message),

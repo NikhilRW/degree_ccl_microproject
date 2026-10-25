@@ -7,7 +7,7 @@ The application code is implemented; **AWS resources have not been created or li
 - Node.js **22.12+** and optionally Bun for the checked-in `bun.lock`.
 - A personal AWS account with MFA, a chosen spending limit, and budget alerts. Alerts are not spending caps. Review current EC2, EBS, IPv4, storage, logs, database, secrets, and transfer pricing.
 - Main region: **Mumbai (`ap-south-1`)**. No API Gateway, Lambda, separate Express backend, or Amplify hosting is required.
-- A Razorpay account that provides **test-mode** credentials. Live keys are rejected by code.
+- No payment-provider account is required. Card and UPI are mock-only; they collect no payment details and charge no money.
 
 ```sh
 bun install --frozen-lockfile
@@ -82,34 +82,20 @@ In SES → Verified identities, verify the sender email and each demo recipient 
 
 Production SES approval is unnecessary for a lab using verified recipients, but required if you later need unrestricted recipients.
 
-## 6. Razorpay Test Mode and Secrets Manager
+## 6. Mock payment behavior
 
-In the Razorpay test dashboard:
-
-1. Obtain a key ID beginning **`rzp_test_`** and its secret.
-2. Configure automatic capture for test payments. The application confirms only provider-reported **captured** payments with the matching order, INR currency, and amount.
-3. Create a webhook at **`https://YOUR-DISTRIBUTION.cloudfront.net/webhooks/razorpay`**, subscribing to `payment.captured` and `order.paid`.
-4. Choose a webhook secret of at least 16 characters. The app verifies the raw body signature, deduplicates delivery, and returns retryable errors if processing fails.
-
-In Secrets Manager, store a plaintext JSON secret (not a browser variable):
-
-```json
-{
-  "keyId": "rzp_test_REPLACE",
-  "keySecret": "REPLACE_WITH_TEST_SECRET",
-  "webhookSecret": "REPLACE_WITH_WEBHOOK_SECRET"
-}
-```
-
-Set `RAZORPAY_SECRET_ID` to its name or ARN. Alternatively, set all three server-only `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET` values in `.env`; the managed secret takes precedence if configured. Never use live keys or enter card data into application forms—Razorpay collects test payment details in its own checkout.
-
-Pending checkout reserves stock for `CHECKOUT_RESERVATION_MINUTES` (default 30). A recurring worker reconciles captured payments, releases abandoned reservations, and retries refunds. A late captured payment after cancellation is refunded rather than fulfilling unavailable stock. Same-checkout retries share an idempotency key; if changing shipping/payment details, cancel the old pending checkout and start a new one. Keep the runtime/recovery worker running for these operations.
+Card and UPI choices display a confirmation prompt and create an order marked as
+`mocked`. No gateway script is loaded, no payment credentials are required, and
+the app collects no card or UPI data. The UI explicitly states that no money is
+charged. This is a synthetic demonstration only, not payment authorization or
+processing. Cash on delivery remains separate and payment stays pending until
+collection.
 
 ## 7. IAM and EC2
 
 Create an IAM role trusted by EC2 and attach an instance profile to the instance. Adapt **`deploy/iam-policy.example.json`** with your exact account/resource identifiers. Do not paste the placeholder policy unchanged.
 
-- Application permissions cover the specified DynamoDB table, Cognito pool, S3 prefixes, SES identity, and payment secret.
+- Application permissions cover the specified DynamoDB table, Cognito pool, S3 prefixes and SES identity.
 - Transactional table writes use the underlying DynamoDB item actions; do not invent an unsupported IAM action for the transaction envelope.
 - If your secret uses a customer-managed KMS key, add scoped `kms:Decrypt` access and the necessary key policy.
 - Operator provisioning permissions are separate from application permissions.
@@ -129,7 +115,7 @@ npm run test:smoke
 npm run start
 ```
 
-`setup:check` is read-only and checks identifiers, table keys, Cognito flow configuration, bucket access, SES sender and test-secret format. It is **not** a replacement for end-to-end permission/CDN/payment tests. Seeding adds synthetic catalogue records and never overwrites existing records or creates fake cloud customer accounts/orders.
+`setup:check` is read-only and checks identifiers, table keys, Cognito flow configuration, bucket access and SES sender. It is **not** a replacement for end-to-end permission/CDN tests. Seeding adds synthetic catalogue records and never overwrites existing records or creates fake cloud customer accounts/orders.
 
 `deploy/intellimart.service` is a systemd example. Create the non-root `intellimart` user, `/opt/intellimart`, and `/var/log/intellimart/application.log` with correct ownership. Adjust `ExecStart` to the actual Node path. Keep source/dependencies alongside the build because the launcher validates configuration through `tsx`. Install/enable the service after testing the commands manually.
 
@@ -146,7 +132,7 @@ Configure a distribution with:
 - Viewer protocol: redirect HTTP to HTTPS. The default CloudFront domain uses its managed certificate; no custom storefront ACM certificate or Route 53 zone is needed.
 - S3 bucket policy: adapt **`deploy/s3-oac-policy.example.json`** to allow only that distribution to read `media/*`.
 
-Set `APP_URL=https://YOUR-DISTRIBUTION.cloudfront.net` and `MEDIA_BASE_URL` to that URL (or a dedicated media distribution). Update S3 CORS and the Razorpay webhook URL. The application's cloud CSRF/origin validation uses the exact configured public URL, not an untrusted forwarded host.
+Set `APP_URL=https://YOUR-DISTRIBUTION.cloudfront.net` and `MEDIA_BASE_URL` to that URL (or a dedicated media distribution). Update S3 CORS. The application's cloud CSRF/origin validation uses the exact configured public URL, not an untrusted forwarded host.
 
 **Important:** Viewer HTTPS does not encrypt CloudFront-to-EC2 HTTP. For real credentials/customer data, configure an HTTPS origin with a trusted certificate matching the origin hostname, restrict origin ingress, and use a secret CloudFront origin header as shown in the Nginx example. This may require an origin domain/certificate even if the storefront uses only the default CloudFront domain. Without it, an HTTP-origin demonstration is a **synthetic-data lab exception**, not a production-secure deployment. Do not reuse real passwords or claim full transport security for that exception.
 
@@ -165,8 +151,8 @@ Install the CloudWatch agent and adapt **`deploy/cloudwatch-agent.example.json`*
 2. Confirm a normal customer cannot execute admin operations, even with direct server-function calls.
 3. Admin creates/edits a product, uploads an image, and manages a category/deal.
 4. Customer cart/wishlist survives reload and a second browser after sign-in; two customers cannot read each other's data/orders.
-5. Complete a Razorpay **test** payment, verify the stored paid order and stock, and receive a test email at a verified recipient.
-6. Exercise failed/dismissed/duplicate payment delivery, cancellation/refund, and expired reservation recovery.
+5. Complete a mock card/UPI checkout and confirm the order is labeled simulated, no payment details are requested, and no charge is made; also verify COD remains pending until collection.
+6. Exercise repeated checkout submission and cancellation/restock behavior.
 7. Admin ships/delivers an order; customer submits a review; admin approves it; public ratings update.
 8. Disable a customer and verify old sessions lose protected access. Check audit records and dashboard totals.
 9. Restart EC2; verify health, persistence, recovery and CloudWatch logs. Ensure no-cache behavior and private pending uploads.
@@ -177,6 +163,6 @@ Only after these tests pass on your account should the deployment be called AWS-
 
 - Before changes, back up local demo data or configure DynamoDB backups/PITR as appropriate; inspect cost first.
 - Deploy a new release directory/build, stop/start the service deliberately, and preserve environment/session key configuration. Roll back the application without rewriting published Git history or deleting live data.
-- Use the admin recovery button and persisted order/payment references to investigate failed workflows. Paid cancellations remain `refund_pending` until verified provider processing; do not manually mark failures paid.
+- Mock approval is not a real payment state. Never represent it as a captured/settled charge or use it for real transactions.
 - After the lab, stop services, disable/delete the CloudFront distribution when ready, terminate EC2 and review retained EBS/snapshots/IP allocations, and remove only the intended S3/table/Cognito/secret/SES/log/IAM resources. Export needed evidence/data first.
 - Stopping EC2 alone does not stop every bill. Check the account's billing/resource inventory after teardown.

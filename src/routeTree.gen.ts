@@ -26,7 +26,6 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
-import { Route as WebhooksRazorpayRouteImport } from './routes/webhooks.razorpay'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -113,11 +112,6 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WebhooksRazorpayRoute = WebhooksRazorpayRouteImport.update({
-  id: '/webhooks/razorpay',
-  path: '/webhooks/razorpay',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,7 +131,6 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/verify-email': typeof VerifyEmailRoute
   '/product/$id': typeof ProductIdRoute
-  '/webhooks/razorpay': typeof WebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,7 +150,6 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/verify-email': typeof VerifyEmailRoute
   '/product/$id': typeof ProductIdRoute
-  '/webhooks/razorpay': typeof WebhooksRazorpayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,7 +170,6 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/verify-email': typeof VerifyEmailRoute
   '/product/$id': typeof ProductIdRoute
-  '/webhooks/razorpay': typeof WebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -200,7 +191,6 @@ export interface FileRouteTypes {
     | '/shop'
     | '/verify-email'
     | '/product/$id'
-    | '/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -220,7 +210,6 @@ export interface FileRouteTypes {
     | '/shop'
     | '/verify-email'
     | '/product/$id'
-    | '/webhooks/razorpay'
   id:
     | '__root__'
     | '/'
@@ -240,7 +229,6 @@ export interface FileRouteTypes {
     | '/shop'
     | '/verify-email'
     | '/product/$id'
-    | '/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,7 +249,6 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ProductIdRoute: typeof ProductIdRoute
-  WebhooksRazorpayRoute: typeof WebhooksRazorpayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -385,13 +372,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/webhooks/razorpay': {
-      id: '/webhooks/razorpay'
-      path: '/webhooks/razorpay'
-      fullPath: '/webhooks/razorpay'
-      preLoaderRoute: typeof WebhooksRazorpayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -413,7 +393,6 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ProductIdRoute: ProductIdRoute,
-  WebhooksRazorpayRoute: WebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

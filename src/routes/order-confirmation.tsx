@@ -99,9 +99,12 @@ function ConfirmationPage() {
         </ul>
 
         <div className="mt-4 flex justify-between border-t border-border pt-4 text-base font-semibold">
-          <span>Total paid</span>
+          <span>Order total</span>
           <span className="tabular-nums">{currency(order.totals.total)}</span>
         </div>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Payment: {order.payment.method === "cod" ? "Cash on delivery" : "Mock-approved — no money charged"}
+        </p>
 
         <div className="mt-6 text-sm">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -113,13 +116,6 @@ function ConfirmationPage() {
           </p>
         </div>
       </div>
-
-      <AwsIntegrationPlaceholder
-        className="mt-8"
-        service="Amazon SES + EventBridge + SQS"
-        objective="Emit OrderCreated, queue it, and send the confirmation email from Lambda."
-        location="src/services/notifications/index.ts"
-      />
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild variant="hero">

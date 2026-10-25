@@ -1,140 +1,20 @@
-# Exact custom domain process: intellimart.nikhilwankhede.com
+# IntelliMart custom domain on EC2
 
-This is an operator runbook, **not a request to provision a domain now**. The app
-uses its existing API Gateway URL; no custom-domain DNS, certificate or mapping
-is provisioned by these instructions until the operator carries out the steps.
-Current stack: `IntelliMartBackend`, account `535614566474`, region `ap-south-1`.
-The full TanStack Start app is served by the Regional HTTP API
-`4u95ynchr3`, at `https://4u95ynchr3.execute-api.ap-south-1.amazonaws.com`,
-using its **$default** stage. No CloudFront distribution is required.
+Use `intellimart.nikhilwankhede.com` as an A record pointing to the Elastic IP
+associated with `HH_EC2`. DNS is hosted at Cloudflare (`amanda.ns.cloudflare.com`
+and `finley.ns.cloudflare.com`). Set the A record to **Proxied** (orange cloud) so
+visitors receive Cloudflare's public edge certificate.
 
-The authoritative DNS provider for `nikhilwankhede.com` is **Cloudflare**, using
-`amanda.ns.cloudflare.com` and `finley.ns.cloudflare.com`. Make both DNS additions
-below in **Cloudflare → nikhilwankhede.com → DNS → Records**. Do not create a Route
-53 hosted zone, move nameservers or migrate the domain. There are **two different
-CNAME purposes**: ACM's underscore-prefixed validation record (kept for renewal),
-and the `intellimart` routing record pointing at API Gateway's Regional target.
+On the instance, Nginx proxies HTTPS traffic to the Node server bound to
+`127.0.0.1:3000`. Create a Cloudflare Origin CA certificate for Nginx and set
+Cloudflare SSL/TLS mode to **Full (strict)**. The Origin CA certificate is trusted
+by Cloudflare, not directly by browsers; visitors use Cloudflare's edge
+certificate. See the [full EC2 deployment, Nginx, certificate, and DNS
+runbook](ec2-deployment.md).
 
-Use AWS credentials for this account and confirm it with the read-only command:
-
-```powershell
-aws sts get-caller-identity
-aws apigatewayv2 get-api --region ap-south-1 --api-id 4u95ynchr3
-aws apigatewayv2 get-stages --region ap-south-1 --api-id 4u95ynchr3
-```
-
-## 1. Request a Regional ACM certificate
-
-In AWS Certificate Manager, select **Mumbai / ap-south-1**, request a public
-certificate for exactly `intellimart.nikhilwankhede.com`, choose DNS validation
-and keep the default RSA key type. Do **not** use the us-east-1 certificate
-instructions for CloudFront or Cognito hosted domains; this is an API Gateway
-Regional application domain.
-
-Equivalent provisioning command, only when approved:
-
-```powershell
-$certificateArn = aws acm request-certificate --region ap-south-1 --domain-name intellimart.nikhilwankhede.com --validation-method DNS --query CertificateArn --output text
-```
-
-Use the real returned ARN; no certificate ARN is supplied/invented here. Read the
-validation record (repeat if ACM has not populated it yet):
-
-```powershell
-aws acm describe-certificate --region ap-south-1 --certificate-arn "$certificateArn" --query "Certificate.DomainValidationOptions[].ResourceRecord" --output table
-```
-
-In **Cloudflare → DNS → Records → Add record**, choose **CNAME** and add the
-**exact validation name and value returned by ACM**. The name is the returned
-underscore-prefixed name, not simply `intellimart`; the target normally ends in
-`.acm-validations.aws`. If Cloudflare appends the zone, enter only the relative
-name instead of duplicating `.nikhilwankhede.com`. Set **Proxy status: DNS only
-(grey cloud)** and TTL Auto.
-Keep this validation record permanently so ACM can renew the certificate. Wait
-for status **ISSUED**:
-
-```powershell
-aws acm describe-certificate --region ap-south-1 --certificate-arn "$certificateArn" --query Certificate.Status --output text
-```
-
-## 2. Create the API Gateway Regional custom domain
-
-In API Gateway **ap-south-1 → Custom domain names → Create**:
-
-- Domain: `intellimart.nikhilwankhede.com`
-- Endpoint type: **Regional**; security policy: **TLS 1.2**
-- ACM certificate: the **ISSUED ap-south-1** certificate above
-- Routing mode, if shown: **API mappings only**
-
-Under this domain's **API mappings**, add:
-
-- API: the HTTP API with ID **4u95ynchr3**
-- Stage: **$default**
-- Path/mapping key: **leave completely empty** (do not enter `/`, `admin` or `api`)
-
-The empty mapping lets `/`, `/admin`, assets and server-function paths reach the
-same app. Read back the mapping and Regional domain target:
-
-```powershell
-aws apigatewayv2 get-api-mappings --region ap-south-1 --domain-name intellimart.nikhilwankhede.com
-aws apigatewayv2 get-domain-name --region ap-south-1 --domain-name intellimart.nikhilwankhede.com --query "DomainNameConfigurations[].{Target:ApiGatewayDomainName,Status:DomainNameStatus,Type:EndpointType}" --output table
-```
-
-Wait until domain status is **AVAILABLE**. Copy the **actual** `ApiGatewayDomainName`
-returned above, of the form `d-….execute-api.ap-south-1.amazonaws.com`. The exact
-target is generated by AWS; it cannot be known before provisioning.
-
-## 3. Point DNS at the Regional custom-domain target
-
-In **Cloudflare → DNS → Records → Add record**, add this second, separate record:
-
-| Field | Value |
-| --- | --- |
-| Type | CNAME |
-| Host/name | `intellimart` |
-| Target/value | The actual **Regional custom-domain** `ApiGatewayDomainName` from step 2, without `https://` or any path |
-| TTL | Auto (or 300 seconds if offered) |
-| Proxy status | **DNS only (grey cloud)**, not Proxied |
-
-Do **not** point it at `4u95ynchr3.execute-api.ap-south-1.amazonaws.com`; the API's
-default endpoint is not the custom-domain DNS target. Do not change the root
-domain, its other records, MX records or the ACM validation CNAME. Remove only
-conflicting records for the exact `intellimart` host if necessary.
-
-After propagation, read DNS and the HTTPS response:
-
-```powershell
-Resolve-DnsName intellimart.nikhilwankhede.com -Type CNAME
-curl.exe -I https://intellimart.nikhilwankhede.com
-```
-
-## 4. Update the application's allowed upload origins and redeploy
-
-Once DNS/HTTPS resolves, update the existing CDK contexts. Keep the old API
-endpoint and local origins so existing sessions and local development can still
-upload images. From the repository root, after approval:
-
-```powershell
-bun run build
-npm.cmd --prefix backend run diff -- --context frontendOrigin=https://intellimart.nikhilwankhede.com --context "extraOrigins=https://4u95ynchr3.execute-api.ap-south-1.amazonaws.com,http://localhost:8000,http://localhost:5173"
-npm.cmd --prefix backend run deploy -- --context frontendOrigin=https://intellimart.nikhilwankhede.com --context "extraOrigins=https://4u95ynchr3.execute-api.ap-south-1.amazonaws.com,http://localhost:8000,http://localhost:5173"
-```
-
-Inspect the diff first: this should retain the existing data table, Cognito pool
-and media bucket, not replace them. Preserve any additional currently configured
-origins if you have added others. For subsequent deployments, persist these
-approved context values in `backend/cdk.json`, or always pass both context flags;
-otherwise a later deploy using old defaults would remove the custom upload origin.
-Keep the existing sender email and all other deployment settings.
-
-The relevant context updates private media S3 CORS. Browser RPCs already use
-same-origin TanStack server functions; **no frontend API URL environment change**
-is needed. The CSRF middleware stays enabled. A `__Host-` HttpOnly cookie is
-host-specific: sign in again on the new hostname; the old API-host cookie cannot
-be copied across. Cognito uses SDK-driven custom forms with OAuth/hosted UI
-disabled, so there are **no hosted-UI callback/logout URLs to change**.
-
-Finally, after deployment, confirm the new domain serves the app and that an
-assigned administrator can upload an image there. Do not remove the old API
-endpoint during this change. These are later operator checks, not checks claimed
-to have been performed during the code-only implementation.
+Before final cleanup, ensure the S3 media bucket CORS allows
+`https://intellimart.nikhilwankhede.com` for browser POST/GET/HEAD requests. Preserve
+the existing API origin until migration is complete. Then review and deploy the
+CDK `resourcesOnly=true` diff as described in the runbook: it keeps DynamoDB,
+Cognito, media storage, SES and the order-email worker while retiring the old
+storefront Lambda, API Gateway and static-assets bucket.

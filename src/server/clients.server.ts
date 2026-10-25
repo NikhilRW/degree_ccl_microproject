@@ -3,7 +3,6 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { S3Client } from "@aws-sdk/client-s3";
 import { SESv2Client } from "@aws-sdk/client-sesv2";
-import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import { getRuntimeConfig } from "./runtime.server";
 
 let clients: ReturnType<typeof createClients> | undefined;
@@ -18,7 +17,6 @@ function createClients() {
     }),
     s3: new S3Client({ region }),
     ses: new SESv2Client({ region }),
-    secrets: new SecretsManagerClient({ region }),
   };
 }
 export function getAwsClients() {

@@ -15,11 +15,6 @@ export const runtimeEnvKeys = [
   "S3_MEDIA_BUCKET",
   "MEDIA_BASE_URL",
   "SES_FROM_EMAIL",
-  "RAZORPAY_SECRET_ID",
-  "RAZORPAY_KEY_ID",
-  "RAZORPAY_KEY_SECRET",
-  "RAZORPAY_WEBHOOK_SECRET",
-  "CHECKOUT_RESERVATION_MINUTES",
 ] as const;
 
 const optional = z.string().trim().default("");
@@ -38,11 +33,6 @@ const schema = z.object({
   S3_MEDIA_BUCKET: optional,
   MEDIA_BASE_URL: optional,
   SES_FROM_EMAIL: optional,
-  RAZORPAY_SECRET_ID: optional,
-  RAZORPAY_KEY_ID: optional,
-  RAZORPAY_KEY_SECRET: optional,
-  RAZORPAY_WEBHOOK_SECRET: optional,
-  CHECKOUT_RESERVATION_MINUTES: z.coerce.number().int().min(5).max(60).default(30),
 });
 
 export function parseRuntimeConfig(env: Record<string, string | undefined>) {
@@ -68,11 +58,6 @@ export function parseRuntimeConfig(env: Record<string, string | undefined>) {
     mediaBucket: data.S3_MEDIA_BUCKET,
     mediaBaseUrl: data.MEDIA_BASE_URL.replace(/\/$/, ""),
     emailFrom: data.SES_FROM_EMAIL,
-    razorpaySecretId: data.RAZORPAY_SECRET_ID,
-    razorpayKeyId: data.RAZORPAY_KEY_ID,
-    razorpayKeySecret: data.RAZORPAY_KEY_SECRET,
-    razorpayWebhookSecret: data.RAZORPAY_WEBHOOK_SECRET,
-    reservationMinutes: data.CHECKOUT_RESERVATION_MINUTES,
   };
 }
 
@@ -97,12 +82,6 @@ export function assertRuntimeAvailable(config: RuntimeConfig) {
   ]
     .filter(([, value]) => !value)
     .map(([name]) => name);
-  if (
-    !config.razorpaySecretId &&
-    !(config.razorpayKeyId && config.razorpayKeySecret && config.razorpayWebhookSecret)
-  ) {
-    missing.push("RAZORPAY_SECRET_ID (or all three RAZORPAY_* credentials)");
-  }
   if (missing.length)
     throw new Error(
       `Cloud configuration is incomplete: ${missing.join(", ")}. No mock fallback is permitted.`,
@@ -122,6 +101,4 @@ export function assertRuntimeAvailable(config: RuntimeConfig) {
     !config.mediaBaseUrl.startsWith("https://")
   )
     throw new Error("MEDIA_BASE_URL must be an HTTPS CloudFront asset URL.");
-  if (config.razorpayKeyId && !config.razorpayKeyId.startsWith("rzp_test_"))
-    throw new Error("Only Razorpay test keys are allowed for this lab.");
 }

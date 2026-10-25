@@ -43,6 +43,7 @@ function CheckoutPage() {
   const [step, setStep] = useState(0);
   const [address, setAddress] = useState<Address>(emptyAddress);
   const [delivery, setDelivery] = useState<DeliveryMethod>("standard");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "upi" | "cod">("card");
   const [placing, setPlacing] = useState(false);
   const requestId = useRef<string | null>(null);
   const active = cart.items.filter((item) => !item.savedForLater);
@@ -88,13 +89,14 @@ function CheckoutPage() {
   ].every((value) => value.trim());
   const placeOrder = async () => {
     if (placing) return;
+    if (paymentMethod !== "cod" && !window.confirm(`Simulate ${paymentMethod.toUpperCase()} payment of ${currency(t.total)}? No payment will be processed.`)) return;
     setPlacing(true);
     requestId.current ??= crypto.randomUUID();
     try {
       const order = await orderService.create({
         address,
         delivery,
-        method: "cod",
+        method: paymentMethod,
         idempotencyKey: requestId.current,
         expectedTotal: t.total,
       });
@@ -198,10 +200,20 @@ function CheckoutPage() {
                 ))}
               </RadioGroup>
               <div className="bg-surface p-5">
-                <h3 className="text-base font-medium">Cash on delivery</h3>
-                <p className="mt-2 text-sm">
-                  Pay the order total when your items arrive. No advance payment is required.
-                </p>
+                <h3 className="text-base font-medium">Payment method</h3>
+                <RadioGroup value={paymentMethod} onValueChange={value => setPaymentMethod(value as "card" | "upi" | "cod")} className="mt-3 gap-3">
+                  {[
+                    { id: "card", title: "Card (mock payment)" },
+                    { id: "upi", title: "UPI (mock payment)" },
+                    { id: "cod", title: "Cash on delivery" },
+                  ].map(option => <Label key={option.id} htmlFor={`payment-${option.id}`} className="flex cursor-pointer items-center gap-3">
+                    <RadioGroupItem id={`payment-${option.id}`} value={option.id} />
+                    <span>{option.title}</span>
+                  </Label>)}
+                </RadioGroup>
+                {paymentMethod === "cod"
+                  ? <p className="mt-3 text-sm">Pay the order total when your items arrive. No advance payment is required.</p>
+                  : <p className="mt-3 text-sm text-muted-foreground">Demo only: this simulates payment approval. No card/UPI details are collected and no money is charged.</p>}
               </div>
             </div>
           )}
@@ -235,7 +247,7 @@ function CheckoutPage() {
                 <div>
                   <h3 className="font-medium">Delivery & payment</h3>
                   <p className="mt-2 capitalize">{delivery} delivery</p>
-                  <p className="mt-1">Cash on delivery</p>
+                  <p className="mt-1">{paymentMethod === "cod" ? "Cash on delivery" : `${paymentMethod.toUpperCase()} · simulated`}</p>
                 </div>
               </div>
             </div>
@@ -257,7 +269,7 @@ function CheckoutPage() {
               </Button>
             ) : (
               <Button disabled={placing} onClick={() => void placeOrder()}>
-                {placing ? "Placing order…" : "Place order"}
+                {placing ? "Placing order…" : paymentMethod === "cod" ? "Place order" : "Simulate payment & place order"}
               </Button>
             )}
           </div>
@@ -276,7 +288,7 @@ function CheckoutPage() {
               </div>
             ))}
             <div className="flex justify-between pt-4 text-lg font-medium">
-              <dt>Due on delivery</dt>
+              <dt>{paymentMethod === "cod" ? "Due on delivery" : "Mock payment total"}</dt>
               <dd className="tabular-nums">{currency(t.total)}</dd>
             </div>
           </dl>

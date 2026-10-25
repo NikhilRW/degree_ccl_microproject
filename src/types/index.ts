@@ -93,8 +93,9 @@ export interface Payment {
   id: string;
   method: "card" | "upi" | "cod";
   last4?: string | undefined;
-  status: "pending" | "authorized" | "captured" | "failed" | "refund_pending" | "refunded";
+  status: "pending" | "mocked";
   amount: number;
+  simulated?: boolean;
 }
 
 export interface OrderItem {
@@ -119,10 +120,6 @@ export interface Order {
   createdAt: string;
   estimatedDelivery: string;
   version?: number;
-  providerOrderId?: string;
-  providerPaymentId?: string;
-  reservationExpiresAt?: number;
-  inventoryReleased?: boolean;
   customerEmail?: string;
   notificationStatus?: "pending" | "sent" | "failed";
 }

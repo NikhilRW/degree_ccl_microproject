@@ -221,7 +221,13 @@ export async function createOrder(user: User, input: z.infer<typeof orderSchema>
         image,
       }; }),
       totals,
-      payment: { id: randomUUID(), method: "cod", status: "pending", amount: totals.total },
+      payment: {
+        id: randomUUID(),
+        method: input.method,
+        status: input.method === "cod" ? "pending" : "mocked",
+        amount: totals.total,
+        ...(input.method === "cod" ? {} : { simulated: true }),
+      },
       status: "processing",
       createdAt: now.toISOString(),
       estimatedDelivery: new Date(

@@ -3,11 +3,11 @@
 A React, TypeScript and TanStack Start full-stack storefront using AWS SDK v3 on the server.
 
 - Cognito customer authentication and email verification
-- Typed same-origin TanStack server functions and SSR in one AWS Lambda
+- Typed same-origin TanStack server functions and SSR on an EC2 Node.js server
 - DynamoDB catalogue, cart, wishlist and orders
 - Private S3 file storage
 - SES order-confirmation emails
-- Cash-on-delivery checkout with transactional inventory updates
+- COD and clearly labeled mock card/UPI checkout with transactional inventory updates; mock approvals never charge money
 
 ## Setup
 
@@ -22,7 +22,7 @@ bun run typecheck
 npm.cmd --prefix backend run typecheck
 ```
 
-There is no demo-mode fallback. A new DynamoDB table contains no products until you import them, and customer operations require a real Cognito account. Online card/UPI processing is not connected; checkout supports cash on delivery.
+Payment gateway processing is intentionally not connected. Card/UPI checkout only records a simulated approval, collects no payment details, and charges no money; COD remains available. A new DynamoDB table contains no products until you import them, and customer operations require a real Cognito account.
 
 ## Code and deployment boundaries
 
@@ -33,6 +33,6 @@ There is no demo-mode fallback. A new DynamoDB table contains no products until 
 
 Authentication uses a random HttpOnly, SameSite=Lax cookie (Secure with a `__Host-` prefix in production). Only a hash of its ID keys the DynamoDB session record; Cognito access/refresh tokens never go to the browser. Each protected call checks the live session and expiry. Refresh rotation uses a cross-instance conditional DynamoDB lock/version check, and logout deletes the session before revoking its Cognito refresh token. Existing TanStack CSRF protection and the SSR error entry remain enabled.
 
-`bun run build` targets Nitro's `aws_lambda` preset. CDK packages the generated `server/index.mjs` handler and uploads generated public files to a private S3 bucket. An HTTP API forwards **all** SSR, RPC and static requests to this Start Lambda, providing one public HTTPS origin. The server reads static files from S3; it does not call the retired operation-specific API. This deliberately simpler baseline avoids proxy-host/CSRF configuration and CloudFront/Lambda POST-signing pitfalls, at the cost of a Lambda invocation for static assets. See the infrastructure guide for build-first provisioning, upload CORS and production limits.
+`bun run build` targets Nitro's `node-server` preset. `bun run start` starts the generated `.output/server/index.mjs`; Nitro serves static files from `.output/public`. On EC2, run the Node process behind Nginx with HTTPS. DynamoDB, Cognito, private media S3, and SES remain AWS-managed services. See [the EC2 deployment runbook](docs/ec2-deployment.md).
 
 The frontend remains connected to Lovable. See `AGENTS.md` for repository history guidance.

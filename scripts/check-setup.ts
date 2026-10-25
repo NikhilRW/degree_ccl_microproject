@@ -9,7 +9,6 @@ import { HeadBucketCommand } from "@aws-sdk/client-s3";
 import { GetEmailIdentityCommand } from "@aws-sdk/client-sesv2";
 import { getAwsClients } from "../src/server/clients.server";
 import { getRuntimeConfig } from "../src/server/runtime.server";
-import { getPaymentSecrets } from "../src/server/razorpay.server";
 
 if (existsSync(".env")) loadEnvFile(".env");
 const config = getRuntimeConfig();
@@ -51,8 +50,7 @@ if (config.mode !== "cloud") {
     new GetEmailIdentityCommand({ EmailIdentity: config.emailFrom }),
   );
   if (!sender.VerifiedForSendingStatus) throw new Error("SES sender is not verified.");
-  await getPaymentSecrets();
   console.log(
-    "AWS identifiers, table keys, Cognito flow, S3 access, SES sender and Razorpay test-secret format checked. No secrets printed. Still test CDN/CORS, recipient verification, role permissions and an end-to-end test payment after deployment.",
+    "AWS identifiers, table keys, Cognito flow, S3 access, and SES sender checked. No secrets printed. Payment methods are simulated only; no payment provider is configured.",
   );
 }
